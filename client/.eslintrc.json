@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "../.eslintrc.json",
+    "plugin:react/recommended",
+    "plugin:react/jsx-runtime",
+    "react-app",
+    "react-app/jest"
+  ],
+  "settings": {
+    "linkComponents": [
+      { "name": "Link", "linkAttribute": "to" }
+    ]
+  },
+  "rules": {
+    "react/prop-types": "off",
+    "import/no-nodejs-modules": "error",
+    "import/no-unassigned-import": ["error", {
+      "allow": ["**/*.css", "**/*.scss"]
+    }]
+  }
+}

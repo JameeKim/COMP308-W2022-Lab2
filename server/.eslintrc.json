@@ -1,0 +1,15 @@
+{
+  "extends": [
+    "../.eslintrc.json"
+  ],
+  "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": [
+          "server/tsconfig.json"
+        ]
+      }
+    }
+  },
+  "rules": {}
+}

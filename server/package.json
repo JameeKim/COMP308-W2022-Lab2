@@ -1,0 +1,20 @@
+{
+  "name": "@dohyunkim/server",
+  "version": "0.1.0",
+  "main": "build/index.js",
+  "scripts": {
+    "start": "node build/index.js",
+    "dev": "ts-node-dev -r tsconfig-paths/register --respawn --exit-child --rs --cache-directory .cache -- src/index.ts",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "express": "^4.17.2",
+    "mongoose": "^6.2.1"
+  },
+  "devDependencies": {
+    "@dohyunkim/common": "*",
+    "@types/express": "^4.17.13",
+    "ts-node-dev": "^2.0.0-0",
+    "tsconfig-paths": "^3.12.0"
+  }
+}
