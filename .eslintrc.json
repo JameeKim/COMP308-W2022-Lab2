@@ -27,11 +27,12 @@
     "comma-dangle": ["error", "always-multiline"],
     "sort-imports": ["error", { "ignoreDeclarationSort": true }],
     "import/order": ["error", {
-      "groups": ["external", "internal", "sibling"],
+      "groups": ["builtin", "external", "internal", "sibling"],
       "alphabetize": {
         "order": "asc",
         "caseInsensitive": true
-      }
+      },
+      "newlines-between": "always"
     }],
     "import/newline-after-import": ["error", { "count": 1 }],
     "import/no-duplicates": "error"

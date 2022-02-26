@@ -7,7 +7,15 @@
     "react-app/jest"
   ],
   "settings": {
+    "import/resolver": {
+      "typescript": {
+        "project": [
+          "./tsconfig.json"
+        ]
+      }
+    },
     "linkComponents": [
+      { "name": "a", "linkAttribute": "href" },
       { "name": "Link", "linkAttribute": "to" }
     ]
   },
