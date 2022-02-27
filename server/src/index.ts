@@ -1,18 +1,19 @@
 import path from "path";
 
-import { config } from "dotenv";
-import express from "express";
-import mongoose from "mongoose";
-import morgan from "morgan";
-
-import getEnv from "./config/env";
-import routes from "./routes";
+import { config } from "dotenv"; // eslint-disable-line import/order
 
 const projectDir = path.resolve(__dirname, "..", "..");
 const dotenvPath = path.resolve(projectDir, ".env.local");
 const publicAssetsDir = path.resolve(projectDir, "client", "build");
 
 config({ path: dotenvPath });
+
+import express from "express";
+import mongoose from "mongoose";
+import morgan from "morgan";
+
+import getEnv from "./config/env";
+import routes from "./routes";
 
 // Connection to the database
 mongoose.connect(getEnv().DB_URI, (error) => {
@@ -39,8 +40,12 @@ app.use(express.static(publicAssetsDir));
 app.use(routes);
 
 // Catch-all routes to send the index.html
-app.all("*", (_req, res) => {
-  res.sendFile(path.resolve(publicAssetsDir, "index.html"));
+app.get("*", (req, res, next) => {
+  if ((req.header("Accept") || "").indexOf("text/html") > -1) {
+    res.sendFile(path.resolve(publicAssetsDir, "index.html"));
+  } else {
+    next();
+  }
 });
 
 const port = process.env.PORT || 5000;

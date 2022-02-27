@@ -1,6 +1,8 @@
 export interface EnvVars {
   DB_URI: string,
   COOKIE_SECRET: string[];
+  JWT_SECRET: string;
+  JWT_COOKIE_NAME: string;
 }
 
 let envVars: EnvVars | undefined;
@@ -26,8 +28,21 @@ export default function getEnv(): Readonly<EnvVars> {
     throw new EnvVarError("COOKIE_SECRET");
   }
   const COOKIE_SECRET = COOKIE_SECRET_RAW.split("\n");
+  if (COOKIE_SECRET.length == 0) {
+    throw new EnvVarError("COOKIE_SECRET");
+  }
 
-  envVars = { DB_URI, COOKIE_SECRET };
+  const JWT_SECRET = process.env.JWT_SECRET;
+  if (!JWT_SECRET) {
+    throw new EnvVarError("JWT_SECRET");
+  }
+
+  const JWT_COOKIE_NAME = process.env.JWT_COOKIE_NAME;
+  if (!JWT_COOKIE_NAME) {
+    throw new EnvVarError("JWT_COOKIE_NAME");
+  }
+
+  envVars = { DB_URI, COOKIE_SECRET, JWT_SECRET, JWT_COOKIE_NAME };
   Object.freeze(envVars);
   return envVars;
 }

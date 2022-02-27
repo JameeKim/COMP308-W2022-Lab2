@@ -6,3 +6,5 @@ public/
 **/*.css
 **/*.scss
 **/*.json
+
+/common/dist/

@@ -8,7 +8,7 @@ export default function Layout(): JSX.Element {
   return (
     <>
       <NavBar />
-      <div className="container">
+      <div className="container container-md-max px-3">
         <Outlet />
       </div>
     </>

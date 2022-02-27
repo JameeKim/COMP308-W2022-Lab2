@@ -10,7 +10,8 @@
   "settings": {
     "import/resolver": {
       "typescript": {}
-    }
+    },
+    "import/internal-regex": "^(@dohyunkim|src)/"
   },
   "rules": {
     "indent": ["error", 2],
