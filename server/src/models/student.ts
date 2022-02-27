@@ -1,11 +1,14 @@
 import mongoose from "mongoose";
 
-import type { StudentData } from "@dohyunkim/common";
+import type { StudentData, StudentDataSmall } from "@dohyunkim/common";
 
-export interface StudentDataServer extends StudentData {
+type StudentDataServerBase = Omit<StudentData, "courses">;
+
+export interface StudentDataServer extends StudentDataServerBase {
   password: string;
   createdAt: Date,
   updatedAt: Date,
+  courses: mongoose.Types.ObjectId[],
 }
 
 const schema = new mongoose.Schema<StudentDataServer>(
@@ -60,6 +63,10 @@ const schema = new mongoose.Schema<StudentDataServer>(
       type: String,
       // required: true,
     },
+    courses: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+    }],
   },
   {
     timestamps: true,
@@ -71,8 +78,25 @@ export default Student;
 
 export type StudentDoc = mongoose.HydratedDocument<StudentDataServer>;
 
-export const toClientData = (serverData: StudentDataServer | StudentDoc): StudentData => {
+export function toClientData(
+  serverData: StudentDataServer | StudentDoc,
+  detailed: false,
+): StudentDataSmall;
+export function toClientData(
+  serverData: StudentDataServer | StudentDoc,
+  detailed: true,
+): StudentData;
+export function toClientData(
+  serverData: StudentDataServer | StudentDoc,
+  detailed = false,
+): StudentData | StudentDataSmall {
   const obj = serverData instanceof Student ? serverData.toJSON() : serverData;
   const { idNumber, email, firstName, lastName, program, phone, address } = obj;
-  return { idNumber, email, firstName, lastName, program, phone, address };
-};
+
+  if (!detailed) {
+    return { idNumber, email, firstName, lastName };
+  }
+
+  const courses = obj.courses.map((id) => id.toString());
+  return { idNumber, email, firstName, lastName, program, phone, address, courses };
+}

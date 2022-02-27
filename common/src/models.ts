@@ -9,18 +9,22 @@ export interface Address {
   postalCode?: string;
 }
 
-export interface StudentData {
+export interface StudentDataSmall {
   idNumber: string;
   email: string;
-  password?: string;
   firstName: string;
   lastName: string;
+}
+
+export interface StudentData extends StudentDataSmall {
+  password?: string;
   address: Address;
   phone?: string;
   program?: string;
+  courses?: string[];
 }
 
-export interface Course {
+export interface CourseData {
   code: string;
   name: string;
   section: number;

@@ -1,7 +1,7 @@
 import {
   ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState,
 } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 import type { StudentData } from "@dohyunkim/common";
 
@@ -26,6 +26,7 @@ export interface AuthContextData {
   readonly register: (data: StudentData) => Promise<AuthRequestResult>;
   readonly update: (data: StudentData) => Promise<AuthRequestResult>;
   readonly healthCheck: () => Promise<AuthRequestResult>;
+  readonly markHealthCheck: () => void;
 }
 
 const AuthContext = createContext<AuthContextData | null>(null);
@@ -47,7 +48,7 @@ export const useAuth = (): AuthContextData => {
 };
 
 /**
- * Redirect to the sign in page if not logged in
+ * Redirect to the sign in page if not logged in (initial render happens)
  */
 export const useRequireAuth = (redirectTo = "/auth/sign-in"): void => {
   const { user } = useAuth();
@@ -58,7 +59,7 @@ export const useRequireAuth = (redirectTo = "/auth/sign-in"): void => {
 };
 
 /**
- * Redirect to the provided url if the user is already logged in
+ * Redirect to the provided url if the user is already logged in (initial render happens)
  */
 export const useRequireNoAuth = (redirectTo = "/"): void => {
   const { user } = useAuth();
@@ -67,6 +68,27 @@ export const useRequireNoAuth = (redirectTo = "/"): void => {
     if (user) navigate(redirectTo, { replace: true });
   }, [navigate, redirectTo, user]);
 };
+
+export interface RequireAuthProps {
+  children: ReactNode;
+  to?: string;
+}
+
+/**
+ * Redirect to the sign in page if not logged in (no render)
+ */
+export function RequireAuth({ children, to }: RequireAuthProps): JSX.Element {
+  const { user } = useAuth();
+  return user ? <>{children}</> : <Navigate to={to || "/auth/sign-in"} replace />;
+}
+
+/**
+ * Redirect to the provided url if the user is already logged in (no render)
+ */
+export function RequireNoAuth({ children, to }: RequireAuthProps): JSX.Element {
+  const { user } = useAuth();
+  return user ? <Navigate to={to || "/"} /> : <>{children}</>;
+}
 
 export interface AuthProviderProps {
   children?: ReactNode;
@@ -153,9 +175,23 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     return { success, response };
   }, []);
 
+  const markHealthCheck = useCallback<AuthContextData["markHealthCheck"]>(
+    () => setNeedHealthCheck(true),
+    [],
+  );
+
   const data = useMemo<AuthContextData>(
-    () => ({ needHealthCheck, user, signIn, signOut, register, update, healthCheck }),
-    [healthCheck, needHealthCheck, register, signIn, signOut, update, user],
+    () => ({
+      needHealthCheck,
+      user,
+      signIn,
+      signOut,
+      register,
+      update,
+      healthCheck,
+      markHealthCheck,
+    }),
+    [healthCheck, markHealthCheck, needHealthCheck, register, signIn, signOut, update, user],
   );
 
   return (

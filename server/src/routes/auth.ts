@@ -40,7 +40,10 @@ auth.get("/test2", (req, res) => {
 // GET /api/auth/whoami - Return the data of the requesting user
 auth.get("/whoami", async (req, res) => {
   const user = await healthCheck(req.cookies);
-  res.status(200).send({ status: "ok", data: user ? toClientData(user) : undefined });
+  if (user) {
+    res.setHeader("Set-Cookie", await writeTokenCookie(user._id));
+  }
+  res.status(200).send({ status: "ok", data: user ? toClientData(user, true) : undefined });
 });
 
 // POST /api/auth/logout - Get rid of the token in the cookie
@@ -157,7 +160,7 @@ auth.post("/update", requireAuth, async (req, res) => {
 
   try {
     await user.set(input).save();
-    res.status(200).send({ status: "ok", data: toClientData(user) });
+    res.status(200).send({ status: "ok", data: toClientData(user, true) });
   } catch (e) {
     if (e instanceof MongoServerError) {
       if (e.code === 11000) {

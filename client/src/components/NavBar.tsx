@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 import { useAuth } from "src/contexts/auth";
 
@@ -36,6 +36,11 @@ export default function NavBar(): JSX.Element {
     <nav className="navbar fixed-top navbar-light bg-light">
       <div className="container">
         <Link to="/" className="navbar-brand">Hello</Link>
+        <ul className="navbar-nav me-auto">
+          <li className="nav-item">
+            <NavLink to="/students" className="nav-link">Students</NavLink>
+          </li>
+        </ul>
         <div className="d-flex">
           {authSection}
         </div>

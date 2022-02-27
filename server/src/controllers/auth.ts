@@ -80,7 +80,7 @@ declare global {
  */
 export const requireAuth: RequestHandler = async (req, res, next) => {
   const user = await healthCheck(req.cookies);
-  if (!user) return res.status(401).send();
+  if (!user) return res.status(401).send({ error: "no_auth" });
   req.user = user;
   next();
 };
