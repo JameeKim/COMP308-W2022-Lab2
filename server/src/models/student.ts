@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 import type { StudentData, StudentDataSmall } from "@dohyunkim/common";
 
-type StudentDataServerBase = Omit<StudentData, "courses">;
+type StudentDataServerBase = Omit<StudentData, "courses" | "_id">;
 
 export interface StudentDataServer extends StudentDataServerBase {
   password: string;
@@ -79,24 +79,25 @@ export default Student;
 export type StudentDoc = mongoose.HydratedDocument<StudentDataServer>;
 
 export function toClientData(
-  serverData: StudentDataServer | StudentDoc,
+  serverData: StudentDoc,
   detailed: false,
 ): StudentDataSmall;
 export function toClientData(
-  serverData: StudentDataServer | StudentDoc,
+  serverData: StudentDoc,
   detailed: true,
 ): StudentData;
 export function toClientData(
-  serverData: StudentDataServer | StudentDoc,
+  serverData: StudentDoc,
   detailed = false,
 ): StudentData | StudentDataSmall {
-  const obj = serverData instanceof Student ? serverData.toJSON() : serverData;
+  const obj = serverData.toJSON();
   const { idNumber, email, firstName, lastName, program, phone, address } = obj;
+  const _id = serverData._id.toString();
 
   if (!detailed) {
-    return { idNumber, email, firstName, lastName };
+    return { _id, idNumber, email, firstName, lastName };
   }
 
   const courses = obj.courses.map((id) => id.toString());
-  return { idNumber, email, firstName, lastName, program, phone, address, courses };
+  return { _id, idNumber, email, firstName, lastName, program, phone, address, courses };
 }

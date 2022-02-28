@@ -6,6 +6,9 @@ import Layout from "./Layout";
 import Account from "./pages/auth/Account";
 import Register from "./pages/auth/Register";
 import SignIn from "./pages/auth/SignIn";
+import CourseAdd from "./pages/courses/CourseAdd";
+import CourseAll from "./pages/courses/CourseAll";
+import Courses from "./pages/courses/Courses";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/students/Students";
@@ -23,6 +26,11 @@ function App(): JSX.Element {
               <Route path="sign-in" element={<SignIn />} />
               <Route path="register" element={<Register />} />
               <Route path="account" element={<Account />} />
+            </Route>
+            <Route path="courses">
+              <Route index element={<Courses />} />
+              <Route path="all" element={<CourseAll />} />
+              <Route path="add" element={<RequireAuth><CourseAdd /></RequireAuth>} />
             </Route>
             <Route path="students">
               <Route index element={<RequireAuth><Students /></RequireAuth>} />

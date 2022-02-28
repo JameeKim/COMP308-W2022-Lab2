@@ -10,6 +10,7 @@ export interface Address {
 }
 
 export interface StudentDataSmall {
+  _id?: string;
   idNumber: string;
   email: string;
   firstName: string;
@@ -25,8 +26,15 @@ export interface StudentData extends StudentDataSmall {
 }
 
 export interface CourseData {
+  _id?: string;
   code: string;
   name: string;
   section: number;
   semester: string;
 }
+
+export const sectionToString = (section: number): string => {
+  if (section < 10) return `00${section}`;
+  if (section < 100) return `0${section}`;
+  return section.toString();
+};

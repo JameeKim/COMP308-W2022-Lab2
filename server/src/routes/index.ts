@@ -1,10 +1,12 @@
 import { Router, json, urlencoded } from "express";
+import methodOverride from "method-override";
 
-import { noCache } from "~/config/cache";
 import { cookieParser } from "~/config/cookie";
 import getEnv from "~/config/env";
+import { noCache } from "~/config/misc";
 
 import auth from "./auth";
+import courses from "./courses";
 import students from "./students";
 
 /**
@@ -12,6 +14,7 @@ import students from "./students";
  */
 const api = Router();
 api.use("/auth", auth);
+api.use("/courses", courses);
 api.use("/students", students);
 
 /**
@@ -24,6 +27,8 @@ routes.use(
   "/api",
   json(),
   urlencoded({ extended: true }),
+  methodOverride("X-HTTP-Method-Override"),
+  methodOverride("_method"),
   cookieParser({ keys: getEnv().COOKIE_SECRET }),
   noCache,
   api,

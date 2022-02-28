@@ -1,4 +1,4 @@
-import { Province, StudentData, provinces } from "./models";
+import { CourseData, Province, StudentData, provinces } from "./models";
 
 export const isString = (input: unknown): input is string => typeof input === "string";
 
@@ -13,6 +13,8 @@ export const isStringUndefined = (input: unknown): input is string | undefined =
 export const isProvince = (input: unknown): input is Province => {
   return typeof input === "string" && provinces.indexOf(input as Province) > -1;
 };
+
+export const isNumber = (input: unknown): input is number => typeof input === "number";
 
 export const isStudentData = (input: unknown): input is StudentData => {
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -30,6 +32,36 @@ export const isStudentData = (input: unknown): input is StudentData => {
     && isStringUndefined(inputAny.address.city)
     && isStringUndefined(inputAny.address.postalCode)
     && (isProvince(inputAny.address.province) || inputAny.address.province === undefined);
+  return !!res;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+};
+
+type CourseSectionLike = number | string;
+
+export const isCourseSectionLike = (input: unknown): input is CourseSectionLike => {
+  if (isNumber(input)) {
+    return input > 0 && input < 1000;
+  }
+  if (isString(input)) {
+    const num = parseInt(input);
+    return !isNaN(num) && num > 0 && num < 1000;
+  }
+  return false;
+};
+
+export const courseSectionToNumber = (input: unknown): number => {
+  if (!isCourseSectionLike(input)) throw new Error(`Failed to parse course section from ${input}`);
+  return isNumber(input) ? input : parseInt(input);
+};
+
+export const isCourseData = (input: unknown): input is CourseData => {
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const inputAny = input as any;
+  const res = input
+    && isString(inputAny.code)
+    && isString(inputAny.name)
+    && isCourseSectionLike(inputAny.section)
+    && isString(inputAny.semester);
   return !!res;
   /* eslint-enable @typescript-eslint/no-explicit-any */
 };

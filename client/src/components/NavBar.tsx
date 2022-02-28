@@ -33,16 +33,21 @@ export default function NavBar(): JSX.Element {
     : <Link to="/auth/sign-in" className="btn btn-outline-primary">Sign In</Link>;
 
   return (
-    <nav className="navbar fixed-top navbar-light bg-light">
+    <nav className="navbar navbar-expand fixed-top navbar-light bg-light">
       <div className="container">
         <Link to="/" className="navbar-brand">Hello</Link>
-        <ul className="navbar-nav me-auto">
-          <li className="nav-item">
-            <NavLink to="/students" className="nav-link">Students</NavLink>
-          </li>
-        </ul>
-        <div className="d-flex">
-          {authSection}
+        <div className="collapse navbar-collapse">
+          <ul className="navbar-nav me-auto">
+            <li className="nav-item">
+              <NavLink to="/courses" className="nav-link">Courses</NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink to="/students" className="nav-link">Students</NavLink>
+            </li>
+          </ul>
+          <div className="d-flex">
+            {authSection}
+          </div>
         </div>
       </div>
     </nav>

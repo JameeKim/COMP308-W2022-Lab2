@@ -11,6 +11,8 @@ export interface FetchOptions<T> {
 export interface FetchContextData {
   get: <T>(url: string, options?: FetchOptions<T>) => Promise<Response>;
   post: <T>(url: string, options?: FetchOptions<T>) => Promise<Response>;
+  put: <T>(url: string, options?: FetchOptions<T>) => Promise<Response>;
+  del: <T>(url: string, options?: FetchOptions<T>) => Promise<Response>;
 }
 
 const FetchContext = createContext<FetchContextData | null>(null);
@@ -68,7 +70,7 @@ export function FetchProvider({ children }: FetchProviderProps): JSX.Element {
       method: "POST",
       cache: "no-cache",
       redirect: options.redirect,
-      body: options.data ? JSON.stringify(options.data) : undefined,
+      body: JSON.stringify(options.data ?? {}),
     });
 
     if (res.status === 401) {
@@ -78,7 +80,51 @@ export function FetchProvider({ children }: FetchProviderProps): JSX.Element {
     return res;
   }, [markHealthCheck]);
 
-  const data = useMemo(() => ({ get, post }), [get, post]);
+  const put = useCallback<FetchContextData["put"]>(async (url, options) => {
+    options = options ?? {};
+
+    const res = await fetch(url, {
+      headers: {
+        ...options.headers,
+        "Content-Type": "application/json; charset=utf-8",
+        "Accept": "application/json",
+        "X-HTTP-Method-Override": "PUT",
+      },
+      method: "POST",
+      cache: "no-cache",
+      body: JSON.stringify(options.data ?? {}),
+    });
+
+    if (res.status === 401) {
+      markHealthCheck();
+    }
+
+    return res;
+  }, [markHealthCheck]);
+
+  const del = useCallback<FetchContextData["del"]>(async (url, options) => {
+    options = options ?? {};
+
+    const res = await fetch(url, {
+      headers: {
+        ...options.headers,
+        "Content-Type": "application/json; charset=utf-8",
+        "Accept": "application/json",
+        "X-HTTP-Method-Override": "DELETE",
+      },
+      method: "POST",
+      cache: "no-cache",
+      body: JSON.stringify(options.data ?? {}),
+    });
+
+    if (res.status === 401) {
+      markHealthCheck();
+    }
+
+    return res;
+  }, [markHealthCheck]);
+
+  const data = useMemo(() => ({ get, post, put, del }), [del, get, post, put]);
 
   return (
     <FetchContext.Provider value={data}>

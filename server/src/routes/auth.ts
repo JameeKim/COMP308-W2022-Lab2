@@ -1,7 +1,7 @@
 import { serialize as serializeCookie } from "cookie";
 import { sign as signCookie } from "cookie-signature";
 import { Router } from "express";
-import {MongoServerError} from "mongodb";
+import { MongoServerError } from "mongodb";
 
 import { isString, isStudentData } from "@dohyunkim/common";
 import getEnv from "~/config/env";

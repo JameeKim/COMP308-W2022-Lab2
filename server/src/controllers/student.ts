@@ -5,7 +5,7 @@ import Student, { StudentDataServer, StudentDoc, toClientData } from "~/models/s
 import type { IdType } from "~/types";
 
 export const getAllStudents = async (): Promise<StudentDataSmall[]> => {
-  const res = await Student.find({});
+  const res = await Student.find({}, {}, { sort: { idNumber: 1 } });
   return res.map((doc) => toClientData(doc, false));
 };
 
@@ -16,23 +16,22 @@ export const getStudentsInCourse = async (courseId: IdType): Promise<StudentData
 
 export const getStudentQuery = (student: IdType | StudentDoc): FilterQuery<StudentDataServer> => {
   const id = (student instanceof Student ? student._id : student) as IdType;
-  return ({
+  return {
     $or: [
       { _id: id },
       { idNumber: id },
     ],
-  });
+  };
 };
 
 /**
  * Return a data of the student with the given id
  */
-export const getStudent = async (studentId: IdType): Promise<StudentDataSmall | null> => {
-  const res = await Student.findOne(getStudentQuery(studentId));
-  return res ? toClientData(res, false) : null;
+export const getStudent = async (studentId: IdType): Promise<StudentDoc | null> => {
+  return await Student.findOne(getStudentQuery(studentId));
 };
 
-export const addCourse = async (
+export const addCourseToStudent = async (
   student: IdType | StudentDoc,
   ...courseIds: IdType[]
 ): Promise<StudentDoc | null> => await Student.findOneAndUpdate(
@@ -40,7 +39,7 @@ export const addCourse = async (
   { $addToSet: { courses: { $each: courseIds } } },
 );
 
-export const dropCourse = async (
+export const dropCourseFromStudent = async (
   student: IdType | StudentDoc,
   ...courseIds: IdType[]
 ): Promise<StudentDoc | null> => await Student.findOneAndUpdate(

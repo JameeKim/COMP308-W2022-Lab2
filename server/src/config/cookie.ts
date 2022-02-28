@@ -51,5 +51,5 @@ export const destroyCookie = (key: string): string => serialize(key, "", {
   sameSite: "lax",
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  expires: new Date(0),
+  maxAge: 0,
 });

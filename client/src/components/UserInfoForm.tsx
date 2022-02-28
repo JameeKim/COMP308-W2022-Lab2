@@ -40,13 +40,13 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
       password,
       firstName,
       lastName,
-      phone: phone || undefined,
-      program: program || undefined,
+      phone: phone,
+      program: program,
       address: {
-        street: street || undefined,
-        city: city || undefined,
+        street: street ,
+        city: city,
         province,
-        postalCode: postalCode || undefined,
+        postalCode: postalCode,
       },
     };
     onSubmit(isStudentData(data) ? data : undefined);
