@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
+  "sideEffects": false,
   "scripts": {
     "build": "tsc --build",
     "dev": "tsc --watch"
