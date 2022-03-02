@@ -30,7 +30,10 @@ export default function NavBar(): JSX.Element {
     : <Link to="/auth/sign-in" className="btn btn-outline-primary">Sign In</Link>;
 
   return (
-    <nav className="navbar navbar-expand fixed-top navbar-light bg-light">
+    <nav
+      className="navbar navbar-expand fixed-top navbar-light bg-primary"
+      style={{ "--bs-bg-opacity": 0.3 }}
+    >
       <div className="container">
         <Link to="/" className="navbar-brand">Hello</Link>
         <div className="collapse navbar-collapse">

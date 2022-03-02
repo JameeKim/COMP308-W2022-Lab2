@@ -5,11 +5,10 @@ import { CourseDataFromServer, sectionToString } from "@dohyunkim/common";
 import SimpleButtonForm from "src/components/form/SimpleButtonForm";
 import PageLoading from "src/components/PageLoading";
 import { useAuth } from "src/contexts/auth";
-import useFetchData, { FetchStatus } from "src/hooks/useFetchData";
+import useFetchData from "src/hooks/useFetchData";
 
 export default function CourseAll(): JSX.Element {
   const {
-    status,
     pending,
     error,
     data,
@@ -37,9 +36,8 @@ export default function CourseAll(): JSX.Element {
         {user && <Link to="/courses/add" className="btn btn-primary ms-auto">Add a Course</Link>}
       </div>
       {<PageLoading show={pending} />}
-      {status === FetchStatus.Pending && <p>Loading...</p>}
-      {status === FetchStatus.Error && <p>Error: <code>{error}</code></p>}
-      {status !== FetchStatus.Pending && <p>{data?.length ?? 0} courses</p>}
+      {error && <p className="alert alert-danger" role="alert">Error: <code>{error}</code></p>}
+      <p>{data?.length ?? 0} courses</p>
       <table className="table align-middle">
         <thead>
           <tr>

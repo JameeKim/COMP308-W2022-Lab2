@@ -12,7 +12,7 @@ const FADE_TIME = 200; // ms
 
 export default function PageLoading({
   show = true,
-  spinnerSize = 1,
+  spinnerSize = 5,
 }: PageLoadingProps): JSX.Element | null {
   const [display, setDisplay] = useState(show);
   const isFirstRender = useIsFirstRender();

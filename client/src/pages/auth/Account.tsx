@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import type { StudentData } from "@dohyunkim/common";
 import UserInfoForm from "src/components/UserInfoForm";
@@ -7,13 +8,17 @@ import { useAuth, useRequireAuth } from "src/contexts/auth";
 export default function Account(): JSX.Element {
   const { user, update } = useAuth();
   const [pending, setPending] = useState(false);
+  const navigate = useNavigate();
 
   useRequireAuth();
 
   const onSubmit = async (data?: StudentData): Promise<void> => {
     if (!data) return;
     setPending(true);
-    await update(data);
+    const res = await update(data);
+    if (res.success) {
+      navigate(`/students/${user?._id ?? ""}`);
+    }
     setPending(false);
   };
 
@@ -34,7 +39,7 @@ export default function Account(): JSX.Element {
       />
       <div className="card-body text-center">
         <button type="submit" form="user-info" className="btn btn-primary" disabled={pending}>
-          Register
+          Update
         </button>
       </div>
     </main>

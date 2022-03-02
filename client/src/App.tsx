@@ -14,6 +14,7 @@ import Courses from "./pages/courses/Courses";
 import SingleCourse from "./pages/courses/SingleCourse";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import StudentDetails from "./pages/students/StudentDetails";
 import Students from "./pages/students/Students";
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -25,11 +26,13 @@ function App(): JSX.Element {
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Index />} />
+
             <Route path="auth">
               <Route path="sign-in" element={<SignIn />} />
               <Route path="register" element={<Register />} />
               <Route path="account" element={<Account />} />
             </Route>
+
             <Route path="courses">
               <Route index element={<Courses />} />
               <Route path="all" element={<CourseAll />} />
@@ -39,9 +42,12 @@ function App(): JSX.Element {
                 <Route path="edit" element={<RequireAuth><CourseEdit /></RequireAuth>} />
               </Route>
             </Route>
+
             <Route path="students">
               <Route index element={<RequireAuth><Students /></RequireAuth>} />
+              <Route path=":id" element={<RequireAuth><StudentDetails /></RequireAuth>} />
             </Route>
+
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

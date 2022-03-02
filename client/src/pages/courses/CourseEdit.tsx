@@ -30,7 +30,7 @@ export default function CourseEdit(): JSX.Element {
     const body = await res.json();
     setSubmitError(body.error ?? "");
     if (res.status === 200) {
-      navigate(url);
+      navigate(`/courses/${id}`);
     }
     setSending(false);
   };

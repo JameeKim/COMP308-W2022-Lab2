@@ -134,7 +134,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         const res = await fetch("/api/auth/whoami", {
           headers: { "Accept": "application/json" },
           method: "GET",
-          cache: "no-store",
+          cache: "no-cache",
           signal: abort.signal,
         });
 
@@ -185,11 +185,13 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
   const signOut = useCallback<AuthContextData["signOut"]>(async () => {
     const response = await fetch("/api/auth/logout", {
       headers: {
+        "Content-Type": "application/json; charset=UTF-8",
         "Accept": "application/json",
         "X-HTTP-Method-Override": "DELETE",
       },
       method: "POST",
       cache: "no-cache",
+      body: JSON.stringify({}),
     });
     let success = false;
     if (response.status === 200) {
@@ -209,6 +211,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         "Accept": "application/json",
       },
       method: "POST",
+      cache: "no-cache",
       body: JSON.stringify(data),
       redirect: "follow",
     });
@@ -231,6 +234,7 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
         "Accept": "application/json",
       },
       method: "POST",
+      cache: "no-cache",
       body: JSON.stringify(data),
     });
     let success = false;

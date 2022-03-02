@@ -1,10 +1,14 @@
+import classNames from "classnames";
+import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
 import {
   StudentDataSmallFromServer, courseSectionToNumber, isCourseSectionLike, sectionToString,
 } from "@dohyunkim/common";
+import SimpleButtonForm from "src/components/form/SimpleButtonForm";
+import PageLoading from "src/components/PageLoading";
 import { useAuth } from "src/contexts/auth";
-import useFetchData from "src/hooks/useFetchData";
+import useFetchData, { FetchStatus } from "src/hooks/useFetchData";
 
 import { useCourseContext } from "./SingleCourse";
 
@@ -13,22 +17,31 @@ interface StudentRowProps {
 }
 
 function StudentRow({ studentId }: StudentRowProps): JSX.Element {
-  const { pending, error, data } =
+  const { status, pending, error, data } =
     useFetchData<StudentDataSmallFromServer>(`/api/students/${studentId}`);
-
   return (
     <tr>
-      <td className={error && "text-danger"}>
-        {error && "X"}
+      <td className={classNames({
+        "text-danger": !!error,
+        "text-success": status === FetchStatus.Success,
+      })}>
+        <span
+          className={classNames("text-center", { invisible: pending })}
+          role="status"
+          aria-label={!pending ? status.toString() : undefined}
+          aria-hidden={pending}
+        >
+          {error ? "X" : "O"}
+        </span>
       </td>
       {pending ? (
-        <td rowSpan={3} className="text-center">
-          <div className="spinner-border text-primary" role="status">
+        <td colSpan={3} className="text-center">
+          <div className="spinner-border spinner-border-sm text-primary" role="status">
             <span className="visually-hidden">Loading data...</span>
           </div>
         </td>
       ) : (error || !data) ? (
-        <td rowSpan={3} className="text-center text-danger">
+        <td colSpan={3} className="text-center text-danger">
           Failed to get student data: <code>{error || "No data"}</code>
         </td>
       ) : (
@@ -48,10 +61,19 @@ function StudentRow({ studentId }: StudentRowProps): JSX.Element {
 }
 
 export default function CourseDetails(): JSX.Element {
-  const { data, error, refetch } = useCourseContext();
-  const { user } = useAuth();
+  const { pending, error, data, refetch } = useCourseContext();
+  const { user, doWhoami } = useAuth();
 
   const notFound = error === "not_found";
+
+  const onChange = useCallback((res: Response): void => {
+    if (res.status === 200) {
+      refetch();
+      doWhoami();
+    }
+  }, [doWhoami, refetch]);
+
+  const userIsInCourse = user && data && (user.courses.includes(data._id));
 
   return (
     <main>
@@ -63,7 +85,29 @@ export default function CourseDetails(): JSX.Element {
           <button type="button" className="btn btn-outline-secondary" onClick={refetch}>
           Fetch Again
           </button>
+          {user && data && (
+            <SimpleButtonForm
+              method={userIsInCourse ? "DELETE" : "PUT"}
+              action={`/api/students/${user._id}/courses/${data._id}`}
+              formClass="d-flex ms-auto"
+              btnClass={`btn btn-sm btn-outline-${userIsInCourse ? "danger" : "success"} w-100`}
+              onResponse={onChange}
+              disabled={pending}
+            >
+              {userIsInCourse ? "Drop" : "Add"}
+            </SimpleButtonForm>
+          )}
+          {user && data && (
+            <Link
+              to={`/courses/${data._id}/edit`}
+              className={classNames("btn btn-outline-primary", { disabled: pending }, "ms-3")}
+              aria-disabled={pending}
+            >
+              Edit
+            </Link>
+          )}
         </div>
+        <PageLoading show={pending} />
         {error && (
           <p className="alert alert-danger" role="alert">
             {notFound ? "No such course" : "Error occurred while fetching data from server"}
@@ -105,7 +149,7 @@ export default function CourseDetails(): JSX.Element {
       {(user && data?.students) && (
         <section className="mt-5">
           <h2 className="mb-3">Registered Students</h2>
-          <table className="table table-bordered table-reponsive align-middle">
+          <table className="table table-bordered table-responsive align-middle">
             <thead>
               <tr>
                 <th scope="col"><span className="visually-hidden">Status</span></th>

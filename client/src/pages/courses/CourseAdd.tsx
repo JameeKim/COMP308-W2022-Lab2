@@ -19,7 +19,7 @@ export default function CourseAdd(): JSX.Element {
     const body = await res.json();
     setError(body.error ?? "");
     if (res.status >= 200 && res.status < 300) {
-      navigate("/courses");
+      navigate(`/courses/${body.data._id}`);
     }
     setPending(false);
   };
