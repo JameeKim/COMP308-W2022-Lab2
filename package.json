@@ -9,9 +9,10 @@
   ],
   "scripts": {
     "start": "npm run start -w server",
-    "dev": "npm-run-all -s build:common -p dev:*",
+    "dev:server": "npm-run-all -p dev:common dev:server-only",
+    "dev:server-only": "npm run dev -w server",
+    "dev:common": "npm run dev -w common",
     "dev:client": "npm run start -w client",
-    "dev:server": "npm run dev -w server",
     "build": "npm-run-all -s build:common -p build:client build:server",
     "build:common": "npm run build -w common",
     "build:client": "npm run build -w client",
