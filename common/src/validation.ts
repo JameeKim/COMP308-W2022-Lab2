@@ -49,9 +49,17 @@ export const isCourseSectionLike = (input: unknown): input is CourseSectionLike 
   return false;
 };
 
-export const courseSectionToNumber = (input: unknown): number => {
-  if (!isCourseSectionLike(input)) throw new Error(`Failed to parse course section from ${input}`);
-  return isNumber(input) ? input : parseInt(input);
+export const courseSectionToNumber = (input: unknown, bypassCheck = false): number => {
+  if (!bypassCheck && !isCourseSectionLike(input)) {
+    throw new Error(`Failed to parse course section from ${input}`);
+  }
+  return isNumber(input) ? input : parseInt(input as string);
+};
+
+export const sectionToString = (section: number): string => {
+  if (section < 10) return `00${section}`;
+  if (section < 100) return `0${section}`;
+  return section.toString();
 };
 
 export const isCourseData = (input: unknown): input is CourseData => {

@@ -1,10 +1,12 @@
 import { FormEventHandler, ReactNode, useCallback } from "react";
 
-import { useAuth } from "src/contexts/auth";
+import { FetchContextData, useFetch } from "src/contexts/fetch";
+
+type Method = "post" | "put" | "delete";
 
 export interface SimpleButtonFormProps {
   action: string;
-  method: string;
+  method: Method | Uppercase<Method>;
   btnClass?: string;
   formClass?: string;
   children?: ReactNode;
@@ -12,31 +14,26 @@ export interface SimpleButtonFormProps {
   onResponse?: (res: Response) => void;
 }
 
+const methods: Readonly<{ [P in SimpleButtonFormProps["method"]]: keyof FetchContextData }> = {
+  post: "post",
+  POST: "post",
+  put: "put",
+  PUT: "put",
+  delete: "del",
+  DELETE: "del",
+};
+
 export default function SimpleButtonForm(
   { action, method, btnClass, formClass, children, disabled, onResponse }: SimpleButtonFormProps,
 ): JSX.Element {
-  const { markHealthCheck } = useAuth();
+  const f = useFetch();
 
   const onSubmit: FormEventHandler<HTMLFormElement> = useCallback(async (e) => {
     if (!onResponse) return;
     e.preventDefault();
-
-    const res = await fetch(action, {
-      headers: {
-        "Accept": "application/json",
-        "X-HTTP-Method-Override": method.toUpperCase(),
-      },
-      method: "POST",
-      cache: "no-cache",
-      body: new FormData(e.target as HTMLFormElement),
-    });
-
-    if (res.status === 401) {
-      markHealthCheck();
-    }
-
+    const res = await f[methods[method]](action);
     onResponse(res);
-  }, [onResponse, action, method, markHealthCheck]);
+  }, [onResponse, f, method, action]);
 
   return (
     <form action={action} method="post" className={formClass} onSubmit={onSubmit}>

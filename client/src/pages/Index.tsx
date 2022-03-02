@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+// TODO Make a proper home page
 export default function Index(): JSX.Element {
   const [status, setStatus] = useState<string | null>(null);
   const [headers, setHeaders] = useState<string | null>(null);
@@ -18,14 +19,9 @@ export default function Index(): JSX.Element {
     fetch("/api/auth/test").then(meh).catch((error) => console.error(error));
   }, []);
 
-  const onClick = async (): Promise<void> => {
-    fetch("/api/auth/test2").then(meh).catch((error) => console.error(error));
-  };
-
   return (
     <main>
       <h1>Hello</h1>
-      <button type="button" onClick={onClick}>Send to test 2</button>
       <p>Status: { status ?? "-" }</p>
       <p>Response Headers:</p>
       { headers && <pre>{headers}</pre> }

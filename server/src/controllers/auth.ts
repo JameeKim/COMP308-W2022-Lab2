@@ -47,10 +47,8 @@ const verifyAsync = (
   });
 };
 
-/**
- * Verify the current user
- */
-export const healthCheck = async (cookies: NodeJS.Dict<string>): Promise<StudentDoc | null> => {
+// Get user data from the cookies by verifying the JWT
+const getUserFromCookies = async (cookies: NodeJS.Dict<string>): Promise<StudentDoc | null> => {
   const token = cookies[getEnv().JWT_COOKIE_NAME];
   if (!token) return null;
 
@@ -70,19 +68,36 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user?: StudentDoc;
+      user: StudentDoc | null;
     }
   }
 }
 
 /**
+ * Middleware that parses current user from the cookies
+ */
+export const parseUser: RequestHandler = async (req, res, next) => {
+  req.user = await getUserFromCookies(req.cookies);
+  next();
+};
+
+/**
  * Middleware that sends 401 if the user is not logged in
  */
 export const requireAuth: RequestHandler = async (req, res, next) => {
-  const user = await healthCheck(req.cookies);
-  if (!user) return res.status(401).send({ error: "no_auth" });
-  req.user = user;
+  if (!req.user) return res.status(401).send({ error: "no_auth" });
   next();
+};
+
+/**
+ * Middleware to redirect users who are already signed in
+ */
+export const requireNoAuth = (location?: string, status = 303): RequestHandler => {
+  return (req, res, next) => {
+    const dest = location ?? (req.accepts("html") ? "/" : "/api/auth/whoami");
+    if (req.user) return res.redirect(status, dest);
+    next();
+  };
 };
 
 /**
@@ -99,6 +114,7 @@ export const authorize = async (id: string, password: string): Promise<StudentDo
  * Insert the new user
  */
 export const register = async (user: StudentData, password: string): Promise<StudentDoc> => {
+  // TODO check already existing users with idNumber / email
   user.password = await hash(password, BCRYPT_SALT_ROUNDS);
   const student = new Student(user);
   await student.save();

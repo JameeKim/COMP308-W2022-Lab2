@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-import type { StudentData, StudentDataSmall } from "@dohyunkim/common";
+import type {
+  StudentData, StudentDataFromServer, StudentDataSmallFromServer,
+} from "@dohyunkim/common";
 
-type StudentDataServerBase = Omit<StudentData, "courses" | "_id">;
-
-export interface StudentDataServer extends StudentDataServerBase {
+export interface StudentDataServer extends Omit<StudentData, "_id"> {
   password: string;
   createdAt: Date,
   updatedAt: Date,
@@ -81,15 +81,15 @@ export type StudentDoc = mongoose.HydratedDocument<StudentDataServer>;
 export function toClientData(
   serverData: StudentDoc,
   detailed: false,
-): StudentDataSmall;
+): StudentDataSmallFromServer;
 export function toClientData(
   serverData: StudentDoc,
   detailed: true,
-): StudentData;
+): StudentDataFromServer;
 export function toClientData(
   serverData: StudentDoc,
   detailed = false,
-): StudentData | StudentDataSmall {
+): StudentDataFromServer | StudentDataSmallFromServer {
   const obj = serverData.toJSON();
   const { idNumber, email, firstName, lastName, program, phone, address } = obj;
   const _id = serverData._id.toString();

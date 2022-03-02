@@ -4,18 +4,20 @@
     "target": "es2021",
     "lib": ["es2021"],
     "module": "commonjs",
-    "rootDir": "src",
-    "outDir": "build",
-    "removeComments": true,
+    "rootDir": "./src",
+    "outDir": "./build",
+    "composite": true,
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
-    "declaration": false,
     "noEmitOnError": true,
-    "baseUrl": "src",
+    "baseUrl": "./src",
     "paths": {
       "~/*": ["./*"]
     }
   },
-  "include": [
-    "src"
+  "include": ["./src"],
+  "references": [
+    { "path": "../common" }
   ]
 }

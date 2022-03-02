@@ -4,11 +4,13 @@
     "target": "es5",
     "lib": [],
     "module": "commonjs",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "composite": true,
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "noEmitOnError": true,
-    "rootDir": "./src",
-    "outDir": "./dist"
   },
   "include": ["./src"]
 }

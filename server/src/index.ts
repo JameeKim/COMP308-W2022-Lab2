@@ -5,6 +5,7 @@ import { config } from "dotenv"; // eslint-disable-line import/order
 const projectDir = path.resolve(__dirname, "..", "..");
 const dotenvPath = path.resolve(projectDir, ".env.local");
 const publicAssetsDir = path.resolve(projectDir, "client", "build");
+const indexHtmlPath = path.resolve(publicAssetsDir, "index.html");
 
 config({ path: dotenvPath });
 
@@ -34,15 +35,17 @@ app.use(morgan("tiny"));
 
 // Static files
 // eslint-disable-next-line import/no-named-as-default-member
-app.use(express.static(publicAssetsDir));
+app.use(express.static(publicAssetsDir, {
+  maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
+}));
 
 // Set up routes
 app.use(routes);
 
 // Catch-all routes to send the index.html
 app.get("*", (req, res, next) => {
-  if ((req.header("Accept") || "").indexOf("text/html") > -1) {
-    res.sendFile(path.resolve(publicAssetsDir, "index.html"));
+  if (req.accepts("html")) {
+    res.sendFile(indexHtmlPath);
   } else {
     next();
   }

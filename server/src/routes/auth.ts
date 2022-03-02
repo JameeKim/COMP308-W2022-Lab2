@@ -1,12 +1,9 @@
-import { serialize as serializeCookie } from "cookie";
-import { sign as signCookie } from "cookie-signature";
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import { MongoServerError } from "mongodb";
 
 import { isString, isStudentData } from "@dohyunkim/common";
-import getEnv from "~/config/env";
 import {
-  authorize, deleteTokenCookie, healthCheck, register, requireAuth, writeTokenCookie,
+  authorize, deleteTokenCookie, register, requireAuth, requireNoAuth, writeTokenCookie,
 } from "~/controllers/auth";
 import { StudentDoc, toClientData } from "~/models/student";
 
@@ -21,51 +18,33 @@ auth.get("/test", (req, res) => {
   });
 });
 
-auth.get("/test2", (req, res) => {
-  const cookieVal = signCookie("Hi!!", getEnv().COOKIE_SECRET[0]);
-  const setCookie = serializeCookie("testing", cookieVal, {
-    path: "/",
-    sameSite: "lax",
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 5,
-  });
-  res.setHeader("Set-Cookie", setCookie).send({
-    headers: req.headers,
-    cookies: req.cookies,
-    signedCookies: req.signedCookies,
-  });
-});
-
-// GET /api/auth/whoami - Return the data of the requesting user
+/**
+ * GET /api/auth/whoami - Return the data of the requesting user
+ */
 auth.get("/whoami", async (req, res) => {
-  const user = await healthCheck(req.cookies);
-  if (user) {
-    res.setHeader("Set-Cookie", await writeTokenCookie(user._id));
+  const newToken = typeof req.query.t === "string";
+  if (req.user && newToken) {
+    res.setHeader("Set-Cookie", await writeTokenCookie(req.user._id));
   }
-  res.status(200).send({ status: "ok", data: user ? toClientData(user, true) : undefined });
+  const data = req.user ? toClientData(req.user, true) : undefined;
+  res.status(200).send({ status: "ok", data });
 });
 
-// POST /api/auth/logout - Get rid of the token in the cookie
-auth.post("/logout", async (req, res) => {
-  const cookie = await deleteTokenCookie();
-  res.status(302)
-    .setHeader("Location", "/")
-    .setHeader("Set-Cookie", cookie)
-    .send();
-});
+/**
+ * POST/DELETE /api/auth/logout - Get rid of the token in the cookie
+ */
+const logout: RequestHandler = async (_req, res) => {
+  res.setHeader("Set-Cookie", await deleteTokenCookie());
+  res.status(200).send({ status: "ok" });
+};
+auth.route("/logout")
+  .post(logout)
+  .delete(logout);
 
-// POST /api/auth/login - Request for a login
-auth.post("/login", async (req, res) => {
-  const user = await healthCheck(req.cookies);
-  if (user) {
-    const cookie = await writeTokenCookie(user._id);
-    return res.status(302)
-      .setHeader("Location", "/")
-      .setHeader("Set-Cookie", cookie)
-      .send();
-  }
-
+/**
+ * POST /api/auth/login - Request for a login
+ */
+auth.post("/login", requireNoAuth(), async (req, res) => {
   const id = req.body.id;
   const password = req.body.password;
 
@@ -75,32 +54,19 @@ auth.post("/login", async (req, res) => {
 
   try {
     const user = await authorize(id, password);
-    if (!user) {
-      return res.status(400).send({ error: "credentials" });
-    }
-
-    const cookie = await writeTokenCookie(user._id);
-    res.status(302)
-      .setHeader("Location", "/")
-      .setHeader("Set-Cookie", cookie)
-      .send();
+    if (!user) return res.status(400).send({ error: "credentials" });
+    res.setHeader("Set-Cookie", await writeTokenCookie(user._id));
+    res.redirect(303, req.accepts("html") ? "/" : "/api/auth/whoami");
   } catch (e) {
     console.error(e);
     res.status(500).send({ error: "internal" });
   }
 });
 
-// POST /api/auth/register - Register a user
-auth.post("/register", async (req, res) => {
-  const user = await healthCheck(req.cookies);
-  if (user) {
-    const cookie = await writeTokenCookie(user._id);
-    return res.status(302)
-      .setHeader("Location", "/")
-      .setHeader("Set-Cookie", cookie)
-      .send();
-  }
-
+/**
+ * POST /api/auth/register - Register a user
+ */
+auth.post("/register", requireNoAuth(), async (req, res) => {
   const input = req.body;
   const password = input && input.password;
   if (input && !input.address) {
@@ -118,11 +84,8 @@ auth.post("/register", async (req, res) => {
 
   try {
     const user = await register(input, password);
-    const cookie = await writeTokenCookie(user._id);
-    res.status(302)
-      .setHeader("Set-Cookie", cookie)
-      .setHeader("Location", "/")
-      .send();
+    res.setHeader("Set-Cookie", await writeTokenCookie(user._id));
+    res.redirect(303, req.accepts("html") ? "/" : "/api/auth/whoami");
   } catch (e) {
     if (e instanceof MongoServerError) {
       if (e.code === 11000) { // duplicate
@@ -136,7 +99,10 @@ auth.post("/register", async (req, res) => {
   }
 });
 
-// POST /api/auth/update - Change user information
+/**
+ * POST /api/auth/update - Change user information
+ */
+// TODO change to PUT and move (or duplicate) to students routes
 auth.post("/update", requireAuth, async (req, res) => {
   const user = req.user as StudentDoc;
 
@@ -155,15 +121,16 @@ auth.post("/update", requireAuth, async (req, res) => {
   }
 
   if (user.idNumber !== input.idNumber) {
-    return res.status(403).send();
+    return res.status(403).send({ error: "forbidden" });
   }
 
   try {
+    // TODO move update of user to controller
     await user.set(input).save();
     res.status(200).send({ status: "ok", data: toClientData(user, true) });
   } catch (e) {
     if (e instanceof MongoServerError) {
-      if (e.code === 11000) {
+      if (e.code === 11000) { // duplicate
         return res.status(400)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .send({ error: "duplicate", fields: Object.keys((e as any).keyPattern )});

@@ -29,7 +29,7 @@ students.get("/:id", requireAuth, async (req, res) => {
 
   const student = await getStudent(req.params.id);
   if (!student) {
-    return res.status(404).send({ error: "not_found" });
+    return res.status(404).send({ error: "not_found", what: "students" });
   }
 
   res.status(200).send({ status: "ok", data: toClientData(student, false) });
@@ -62,7 +62,7 @@ students.put("/:id/courses/:cid", requireAuth, async (req, res) => {
     return res.status(500).send({ error: "internal" });
   }
 
-  res.status(200).send({ status: "ok", data: result });
+  res.status(200).send({ status: "ok", data: toClientData(result, true) });
 });
 
 // DELETE /api/students/:id/courses/:cid - Drop the given course from the student
@@ -73,10 +73,7 @@ students.delete("/:id/courses/:cid", requireAuth, async (req, res) => {
 
   const course = await getCourse(req.params.cid);
   if (!course) {
-    return res.status(400).send({
-      error: "bad_data",
-      message: `Course ${req.params.cid} doesn't exist`,
-    });
+    return res.status(404).send({ error: "not_found", what: "courses" });
   }
 
   const result = await dropCourseFromStudent(req.user, course._id);
@@ -84,5 +81,5 @@ students.delete("/:id/courses/:cid", requireAuth, async (req, res) => {
     return res.status(500).send({ error: "internal" });
   }
 
-  res.status(200).send({ status: "ok", data: result });
+  res.status(200).send({ status: "ok", data: toClientData(result, true) });
 });

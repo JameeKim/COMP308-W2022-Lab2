@@ -8,9 +8,9 @@ export interface CookieParserOptions {
   keys?: string[];
 }
 
-export function cookieParser(options: CookieParserOptions): RequestHandler {
+export function cookieParser(options?: CookieParserOptions): RequestHandler {
   return (req, _res, next) => {
-    const keys = !options.keys || options.keys.length == 0 ? getEnv().COOKIE_SECRET : options.keys;
+    const keys = !options?.keys || options.keys.length == 0 ? getEnv().COOKIE_SECRET : options.keys;
     const cookies = parse(req.headers.cookie ?? "");
     const unsigned: NodeJS.Dict<string> = {};
 

@@ -1,34 +1,52 @@
-import type { StudentDataSmall } from "@dohyunkim/common";
+import { Link } from "react-router-dom";
+
+import type { StudentDataSmallFromServer } from "@dohyunkim/common";
+import PageLoading from "src/components/PageLoading";
 import useFetchData, { FetchStatus } from "src/hooks/useFetchData";
 
 export default function Students(): JSX.Element {
-  const { status, data, refetch } = useFetchData<StudentDataSmall[]>("/api/students");
+  const { status, pending, data, refetch } =
+    useFetchData<StudentDataSmallFromServer[]>("/api/students");
 
   return (
     <main>
       <h1 className="mb-3">Students</h1>
       <div className="d-flex mb-3">
-        <button type="button" className="btn btn-secondary" onClick={refetch}>Fetch Again</button>
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          disabled={pending}
+          onClick={refetch}
+        >
+          Fetch Again
+        </button>
       </div>
-      {status === FetchStatus.Pending && <p>Loading...</p>}
+      <PageLoading show={pending} />
       {status === FetchStatus.Error && <p>Error</p>}
-      {status !== FetchStatus.Pending && <p>{data?.length} students</p>}
-      <table className="table">
+      <p>{data?.length ?? 0} students</p>
+      <table className="table align-middle">
         <thead>
           <tr>
             <th scope="col">Student ID</th>
-            <th scope="col">First Name</th>
-            <th scope="col">Last Name</th>
+            <th scope="col">Name</th>
             <th scope="col">Email Address</th>
+            <th scope="col"><span className="visually-hidden">View Details</span></th>
           </tr>
         </thead>
         <tbody>
           {data?.map((data) => (
             <tr key={data._id}>
               <td>{data.idNumber}</td>
-              <td>{data.firstName}</td>
-              <td>{data.lastName}</td>
+              <td>{data.lastName}, {data.firstName}</td>
               <td>{data.email}</td>
+              <td>
+                <Link
+                  to={`/students/${data._id}`}
+                  className="btn btn-sm btn-outline-secondary w-100"
+                >
+                  View
+                </Link>
+              </td>
             </tr>
           ))}
         </tbody>

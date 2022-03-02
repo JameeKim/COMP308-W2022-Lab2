@@ -1,16 +1,12 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 import { useAuth } from "src/contexts/auth";
 
+// TODO NavBar collapse
 export default function NavBar(): JSX.Element {
-  const { needHealthCheck, user, signOut, healthCheck } = useAuth();
+  const { user, signOut } = useAuth();
   const [signOutPending, setSignOutPending] = useState(false);
-
-  useEffect(() => {
-    if (!needHealthCheck) return;
-    healthCheck();
-  }, [healthCheck, needHealthCheck]);
 
   const onSignOut = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -24,7 +20,8 @@ export default function NavBar(): JSX.Element {
       <Link to="/auth/account" className="navbar-text me-3">
         {user.firstName}
       </Link>
-      <form action="/api/auth/logout" method="post" onSubmit={onSignOut}>
+      <form action="/api/auth/logout" method="POST" onSubmit={onSignOut}>
+        <input type="hidden" name="_method" value="DELETE" />
         <button type="submit" className="btn btn-outline-danger" disabled={signOutPending}>
           Sign Out
         </button>

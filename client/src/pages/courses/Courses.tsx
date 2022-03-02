@@ -1,28 +1,40 @@
 import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
-import { CourseData, sectionToString } from "@dohyunkim/common";
+import { CourseDataFromServer, sectionToString } from "@dohyunkim/common";
 import SimpleButtonForm from "src/components/form/SimpleButtonForm";
+import PageLoading from "src/components/PageLoading";
 import { useAuth } from "src/contexts/auth";
 import useFetchData, { FetchStatus } from "src/hooks/useFetchData";
 
 export default function Courses(): JSX.Element {
-  const { user, markHealthCheck } = useAuth();
+  const { user, doWhoami } = useAuth();
   const url = `/api/students/${user?._id}/courses`;
-  const { status, responseStatus, data, refetch } = useFetchData<CourseData[]>(url, !user);
+  const {
+    status,
+    pending,
+    error,
+    data,
+    refetch,
+  } = useFetchData<CourseDataFromServer[]>(url, !user);
 
   const onChange = useCallback((res: Response): void => {
     if (res.status === 200) {
       refetch();
-      markHealthCheck();
+      doWhoami();
     }
-  }, [markHealthCheck, refetch]);
+  }, [doWhoami, refetch]);
 
   return (
     <main>
       <h1 className="mb-3">My Courses</h1>
       <div className="d-flex mb-3 align-items-end">
-        <button type="button" className="btn btn-outline-secondary" onClick={refetch}>
+        <button
+          type="button"
+          className="btn btn-outline-secondary"
+          disabled={pending || !user}
+          onClick={refetch}
+        >
           Fetch Again
         </button>
         <Link to="/courses/all" className="ms-auto me-2">See All Courses &gt;</Link>
@@ -33,8 +45,8 @@ export default function Courses(): JSX.Element {
           list.
         </p>
       )}
-      {status === FetchStatus.Pending && <p>Loading...</p>}
-      {status === FetchStatus.Error && responseStatus >= 500 && <p>Error</p>}
+      <PageLoading show={pending} />
+      {status === FetchStatus.Error && <p>Error: <code>{error}</code></p>}
       {status !== FetchStatus.Pending && <p>{user ? data?.length : 0} courses</p>}
       <table className="table align-middle">
         <thead>
@@ -56,7 +68,7 @@ export default function Courses(): JSX.Element {
             <tr key={`${course._id}`}>
               <td>{course.semester}</td>
               <td>{course.code}</td>
-              <td>{course.name}</td>
+              <td><Link to={`./${course._id}`}>{course.name}</Link></td>
               <td>{sectionToString(course.section)}</td>
               {user && (
                 <>
@@ -72,7 +84,7 @@ export default function Courses(): JSX.Element {
                   </td>
                   <td>
                     <Link
-                      to={`/courses/edit/${course._id}`}
+                      to={`./${course._id}/edit`}
                       className="btn btn-sm btn-outline-primary w-100"
                     >
                       Edit

@@ -6,6 +6,7 @@ export interface FetchOptions<T> {
   headers?: Record<string, string>;
   data?: T;
   redirect?: RequestRedirect;
+  signal?: AbortSignal;
 }
 
 export interface FetchContextData {
@@ -34,95 +35,116 @@ export interface FetchProviderProps {
   children?: ReactNode;
 }
 
+/**
+ * Provide convenience functions for making api calls
+ */
 export function FetchProvider({ children }: FetchProviderProps): JSX.Element {
-  const { markHealthCheck } = useAuth();
+  const { doWhoami } = useAuth();
 
+  /**
+   * Send a GET request
+   */
   const get = useCallback<FetchContextData["get"]>(async (url, options) => {
-    options = options ?? {};
+    const { headers, redirect, signal } = options ?? {};
 
-    // TODO implement including body for get (query string in url)
+    // TODO implement including data for get (query string in url)
     const res = await fetch(url, {
       headers: {
-        ...options.headers,
         "Accept": "application/json",
+        ...headers,
       },
       method: "GET",
-      cache: "no-cache",
-      redirect: options.redirect,
+      cache: "no-store",
+      redirect,
+      signal,
     });
 
     if (res.status === 401) {
-      markHealthCheck();
+      doWhoami();
     }
 
     return res;
-  }, [markHealthCheck]);
+  }, [doWhoami]);
 
+  /**
+   * Send a POST request
+   */
   const post = useCallback<FetchContextData["post"]>(async (url, options) => {
-    options = options ?? {};
+    const { headers, data, redirect, signal } = options ?? {};
 
     const res = await fetch(url, {
       headers: {
-        ...options.headers,
         "Content-Type": "application/json; charset=utf-8",
         "Accept": "application/json",
+        ...headers,
       },
       method: "POST",
-      cache: "no-cache",
-      redirect: options.redirect,
-      body: JSON.stringify(options.data ?? {}),
+      cache: "no-store",
+      redirect,
+      signal,
+      body: JSON.stringify(data ?? {}),
     });
 
     if (res.status === 401) {
-      markHealthCheck();
+      doWhoami();
     }
 
     return res;
-  }, [markHealthCheck]);
+  }, [doWhoami]);
 
+  /**
+   * Send a PUT request
+   */
   const put = useCallback<FetchContextData["put"]>(async (url, options) => {
-    options = options ?? {};
+    const { headers, data, redirect, signal } = options ?? {};
 
     const res = await fetch(url, {
       headers: {
-        ...options.headers,
         "Content-Type": "application/json; charset=utf-8",
         "Accept": "application/json",
         "X-HTTP-Method-Override": "PUT",
+        ...headers,
       },
       method: "POST",
-      cache: "no-cache",
-      body: JSON.stringify(options.data ?? {}),
+      cache: "no-store",
+      redirect,
+      signal,
+      body: JSON.stringify(data ?? {}),
     });
 
     if (res.status === 401) {
-      markHealthCheck();
+      doWhoami();
     }
 
     return res;
-  }, [markHealthCheck]);
+  }, [doWhoami]);
 
+  /**
+   * Send a DELETE request
+   */
   const del = useCallback<FetchContextData["del"]>(async (url, options) => {
-    options = options ?? {};
+    const { headers, data, redirect, signal } = options ?? {};
 
     const res = await fetch(url, {
       headers: {
-        ...options.headers,
         "Content-Type": "application/json; charset=utf-8",
         "Accept": "application/json",
         "X-HTTP-Method-Override": "DELETE",
+        ...headers,
       },
       method: "POST",
-      cache: "no-cache",
-      body: JSON.stringify(options.data ?? {}),
+      cache: "no-store",
+      redirect,
+      signal,
+      body: JSON.stringify(data ?? {}),
     });
 
     if (res.status === 401) {
-      markHealthCheck();
+      doWhoami();
     }
 
     return res;
-  }, [markHealthCheck]);
+  }, [doWhoami]);
 
   const data = useMemo(() => ({ get, post, put, del }), [del, get, post, put]);
 

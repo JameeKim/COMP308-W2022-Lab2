@@ -1,6 +1,6 @@
 import mongoose, { HydratedDocument } from "mongoose";
 
-import type { CourseData } from "@dohyunkim/common";
+import type { CourseData, CourseDataFromServer } from "@dohyunkim/common";
 
 type CourseDataNoId = Omit<CourseData, "_id">;
 
@@ -32,7 +32,7 @@ export default Course;
 
 export type CourseDoc = HydratedDocument<CourseDataNoId>;
 
-export const toClientDataCourse = (data: CourseDoc): CourseData => {
+export const toClientDataCourse = (data: CourseDoc): CourseDataFromServer => {
   const { code, name, section, semester } = data.toJSON();
   const _id = data._id.toString();
   return { _id, code, name, section, semester };

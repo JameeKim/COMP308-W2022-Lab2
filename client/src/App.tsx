@@ -8,7 +8,10 @@ import Register from "./pages/auth/Register";
 import SignIn from "./pages/auth/SignIn";
 import CourseAdd from "./pages/courses/CourseAdd";
 import CourseAll from "./pages/courses/CourseAll";
+import CourseDetails from "./pages/courses/CourseDetails";
+import CourseEdit from "./pages/courses/CourseEdit";
 import Courses from "./pages/courses/Courses";
+import SingleCourse from "./pages/courses/SingleCourse";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Students from "./pages/students/Students";
@@ -31,6 +34,10 @@ function App(): JSX.Element {
               <Route index element={<Courses />} />
               <Route path="all" element={<CourseAll />} />
               <Route path="add" element={<RequireAuth><CourseAdd /></RequireAuth>} />
+              <Route path=":id" element={<SingleCourse />}>
+                <Route index element={<CourseDetails />} />
+                <Route path="edit" element={<RequireAuth><CourseEdit /></RequireAuth>} />
+              </Route>
             </Route>
             <Route path="students">
               <Route index element={<RequireAuth><Students /></RequireAuth>} />

@@ -1,7 +1,7 @@
 import { ComponentPropsWithoutRef, FormEventHandler, forwardRef, useCallback } from "react";
 
 import {
-  CourseData, courseSectionToNumber, isCourseData, isCourseSectionLike,
+  CourseData, courseSectionToNumber, isCourseData, isCourseSectionLike, sectionToString,
 } from "@dohyunkim/common";
 
 import Label from "./form/Label";
@@ -15,7 +15,7 @@ export interface CourseFormProps extends CourseFormPropsBase {
 }
 
 const CourseForm = forwardRef<HTMLFormElement, CourseFormProps>((
-  { data, disabled, onSubmit, children, ...props },
+  { data, disabled, onSubmit, children, method, ...props },
   ref,
 ) => {
   const submitHandler: FormEventHandler<HTMLFormElement> = useCallback((e) => {
@@ -37,7 +37,8 @@ const CourseForm = forwardRef<HTMLFormElement, CourseFormProps>((
   }, [onSubmit]);
 
   return (
-    <form ref={ref} onSubmit={submitHandler} {...props}>
+    <form ref={ref} method="post" onSubmit={submitHandler} {...props}>
+      <input type="hidden" name="_method" value={method ?? "POST"} />
       <div className="row">
         <div className="mb-3 col-12 col-sm">
           <Label htmlFor="course-semester" className="form-label" required>Semester</Label>
@@ -76,7 +77,7 @@ const CourseForm = forwardRef<HTMLFormElement, CourseFormProps>((
             name="section"
             id="course-section"
             className="form-control"
-            defaultValue={data?.section}
+            defaultValue={(data && sectionToString(data.section)) || undefined}
             pattern="([1-9][0-9][0-9])|([0-9][1-9][0-9])|(00[1-9])"
             placeholder="ex) 003"
             required
