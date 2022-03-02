@@ -10,14 +10,6 @@ import { StudentDoc, toClientData } from "~/models/student";
 const auth = Router();
 export default auth;
 
-auth.get("/test", (req, res) => {
-  res.send({
-    headers: req.headers,
-    cookies: req.cookies,
-    signedCookies: req.signedCookies,
-  });
-});
-
 /**
  * GET /api/auth/whoami - Return the data of the requesting user
  */

@@ -22,12 +22,12 @@ export default function NavBar(): JSX.Element {
       </Link>
       <form action="/api/auth/logout" method="POST" onSubmit={onSignOut}>
         <input type="hidden" name="_method" value="DELETE" />
-        <button type="submit" className="btn btn-outline-danger" disabled={signOutPending}>
+        <button type="submit" className="btn btn-danger" disabled={signOutPending}>
           Sign Out
         </button>
       </form>
     </>
-    : <Link to="/auth/sign-in" className="btn btn-outline-primary">Sign In</Link>;
+    : <Link to="/auth/sign-in" className="btn btn-primary">Sign In</Link>;
 
   return (
     <nav
