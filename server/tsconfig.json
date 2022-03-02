@@ -10,11 +10,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "noEmitOnError": true,
-    "baseUrl": "./src",
-    "paths": {
-      "~/*": ["./*"]
-    }
+    "noEmitOnError": true
   },
   "include": ["./src"],
   "references": [

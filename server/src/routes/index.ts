@@ -1,9 +1,9 @@
 import { Router, json, urlencoded } from "express";
 import methodOverride from "method-override";
 
-import { cookieParser } from "~/config/cookie";
-import { noCache, onlyAccept } from "~/config/misc";
-import { parseUser } from "~/controllers/auth";
+import { cookieParser } from "../config/cookie";
+import { noCache, onlyAccept } from "../config/misc";
+import { parseUser } from "../controllers/auth";
 
 import auth from "./auth";
 import courses from "./courses";

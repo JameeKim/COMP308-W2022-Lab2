@@ -1,8 +1,9 @@
 import type { FilterQuery } from "mongoose";
 
 import type { StudentDataSmallFromServer } from "@dohyunkim/common";
-import Student, { StudentDataServer, StudentDoc, toClientData } from "~/models/student";
-import type { IdType } from "~/types";
+
+import Student, { StudentDataServer, StudentDoc, toClientData } from "../models/student";
+import type { IdType } from "../types";
 
 /**
  * Get the list of all students in the database, ready to be sent to the client

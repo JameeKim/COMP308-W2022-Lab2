@@ -28,7 +28,7 @@
     "comma-dangle": ["error", "always-multiline"],
     "sort-imports": ["error", { "ignoreDeclarationSort": true }],
     "import/order": ["error", {
-      "groups": ["builtin", "external", "internal", "sibling"],
+      "groups": ["builtin", "external", "internal", "parent", "sibling"],
       "alphabetize": {
         "order": "asc",
         "caseInsensitive": true

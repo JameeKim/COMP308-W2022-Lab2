@@ -1,11 +1,11 @@
 import { Router } from "express";
 
-import { requireAuth } from "~/controllers/auth";
-import { getCourse, getCoursesForStudent } from "~/controllers/course";
+import { requireAuth } from "../controllers/auth";
+import { getCourse, getCoursesForStudent } from "../controllers/course";
 import {
   addCourseToStudent, dropCourseFromStudent, getAllStudents, getStudent,
-} from "~/controllers/student";
-import { toClientData } from "~/models/student";
+} from "../controllers/student";
+import { toClientData } from "../models/student";
 
 const students = Router();
 export default students;

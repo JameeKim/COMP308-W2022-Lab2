@@ -4,10 +4,11 @@ import { JwtPayload, Secret, SignOptions, VerifyOptions, sign, verify } from "js
 import type { Types } from "mongoose";
 
 import type { StudentData } from "@dohyunkim/common";
-import { BCRYPT_SALT_ROUNDS, TOKEN_VALID_PERIOD } from "~/config/auth";
-import { destroyCookie, writeCookie } from "~/config/cookie";
-import getEnv from "~/config/env";
-import Student, { StudentDoc } from "~/models/student";
+
+import { BCRYPT_SALT_ROUNDS, TOKEN_VALID_PERIOD } from "../config/auth";
+import { destroyCookie, writeCookie } from "../config/cookie";
+import getEnv from "../config/env";
+import Student, { StudentDoc } from "../models/student";
 
 interface Payload extends JwtPayload {
   id: string;

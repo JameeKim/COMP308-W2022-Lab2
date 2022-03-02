@@ -1,10 +1,11 @@
 import { Router } from "express";
 
 import { isCourseData } from "@dohyunkim/common";
-import { requireAuth } from "~/controllers/auth";
-import { findOrAddCourse, getAllCourses, getCourse, updateCourse } from "~/controllers/course";
-import { getStudentsInCourse } from "~/controllers/student";
-import { toClientDataCourse } from "~/models/course";
+
+import { requireAuth } from "../controllers/auth";
+import { findOrAddCourse, getAllCourses, getCourse, updateCourse } from "../controllers/course";
+import { getStudentsInCourse } from "../controllers/student";
+import { toClientDataCourse } from "../models/course";
 
 const courses = Router();
 export default courses;

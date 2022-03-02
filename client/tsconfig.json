@@ -15,9 +15,7 @@
     "jsx": "react-jsx",
     "baseUrl": "."
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "references": [
     { "path": "../common" }
   ]

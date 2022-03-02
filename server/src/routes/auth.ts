@@ -2,10 +2,11 @@ import { RequestHandler, Router } from "express";
 import { MongoServerError } from "mongodb";
 
 import { isString, isStudentData } from "@dohyunkim/common";
+
 import {
   authorize, deleteTokenCookie, register, requireAuth, requireNoAuth, writeTokenCookie,
-} from "~/controllers/auth";
-import { StudentDoc, toClientData } from "~/models/student";
+} from "../controllers/auth";
+import { StudentDoc, toClientData } from "../models/student";
 
 const auth = Router();
 export default auth;

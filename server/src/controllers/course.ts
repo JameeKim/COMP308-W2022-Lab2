@@ -1,7 +1,8 @@
 import type { CourseData, CourseDataFromServer } from "@dohyunkim/common";
-import Course, { CourseDoc, toClientDataCourse } from "~/models/course";
-import Student, { StudentDoc } from "~/models/student";
-import type { DataWithFlag, IdType } from "~/types";
+
+import Course, { CourseDoc, toClientDataCourse } from "../models/course";
+import Student, { StudentDoc } from "../models/student";
+import type { DataWithFlag, IdType } from "../types";
 
 import { getStudentQuery } from "./student";
 
