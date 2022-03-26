@@ -9,15 +9,17 @@
   ],
   "scripts": {
     "start": "npm -w server run start",
-    "dev:server": "npm-run-all -p dev:common dev:server-only",
+    "dev:server": "npm-run-all -p dev:graphql dev:common dev:server-only",
     "dev:server-only": "npm -w server run dev",
     "dev:common": "npm -w common run dev",
+    "dev:graphql": "graphql-codegen -w",
     "dev:client": "npm -w client run start",
     "build": "npm-run-all -s build:graphql build:common -p build:client build:server",
     "build:graphql": "graphql-codegen",
     "build:common": "npm -w common run build",
     "build:client": "npm -w client run build",
-    "build:server": "npm -w server run build"
+    "build:server": "npm -w server run build",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "graphql": "^15.8.0",
@@ -28,6 +30,7 @@
     "@graphql-codegen/typescript": "^2.4.8",
     "@graphql-codegen/typescript-operations": "^2.3.5",
     "@graphql-codegen/typescript-resolvers": "^2.6.1",
+    "@swc/core": "^1.2.160",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "concurrently": "^7.0.0",
@@ -35,6 +38,7 @@
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.4",
     "npm-run-all": "^4.1.5",
+    "patch-package": "^6.4.7",
     "typescript": "^4.5.5"
   }
 }

@@ -1,0 +1,12 @@
+diff --git a/node_modules/ts-node-dev/lib/bin.js b/node_modules/ts-node-dev/lib/bin.js
+index fd9f883..d184859 100644
+--- a/node_modules/ts-node-dev/lib/bin.js
++++ b/node_modules/ts-node-dev/lib/bin.js
+@@ -34,6 +34,7 @@ var tsNodeFlags = {
+         'files',
+         'pretty',
+         'transpile-only',
++        'swc',
+         'prefer-ts-exts',
+         'prefer-ts',
+         'log-error',
