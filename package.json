@@ -8,17 +8,26 @@
     "server"
   ],
   "scripts": {
-    "start": "npm run start -w server",
+    "start": "npm -w server run start",
     "dev:server": "npm-run-all -p dev:common dev:server-only",
-    "dev:server-only": "npm run dev -w server",
-    "dev:common": "npm run dev -w common",
-    "dev:client": "npm run start -w client",
-    "build": "npm-run-all -s build:common -p build:client build:server",
-    "build:common": "npm run build -w common",
-    "build:client": "npm run build -w client",
-    "build:server": "npm run build -w server"
+    "dev:server-only": "npm -w server run dev",
+    "dev:common": "npm -w common run dev",
+    "dev:client": "npm -w client run start",
+    "build": "npm-run-all -s build:graphql build:common -p build:client build:server",
+    "build:graphql": "graphql-codegen",
+    "build:common": "npm -w common run build",
+    "build:client": "npm -w client run build",
+    "build:server": "npm -w server run build"
+  },
+  "dependencies": {
+    "graphql": "^15.8.0",
+    "graphql-date-scalars": "^0.1.3"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^2.6.2",
+    "@graphql-codegen/typescript": "^2.4.8",
+    "@graphql-codegen/typescript-operations": "^2.3.5",
+    "@graphql-codegen/typescript-resolvers": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
     "concurrently": "^7.0.0",

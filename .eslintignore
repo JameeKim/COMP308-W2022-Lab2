@@ -8,3 +8,4 @@ public/
 **/*.json
 
 /common/dist/
+*.gen.ts

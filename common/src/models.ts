@@ -1,7 +1,15 @@
-export type Province = "AB" | "BC" | "MB" | "NB" | "NL" | "NS" | "ON" | "PE" | "QC" | "SK";
-export const provinces: ReadonlyArray<Province> =
-  ["AB", "BC", "MB", "NB", "NL", "NS", "ON", "PE", "QC", "SK"];
-Object.freeze(provinces);
+export enum Province {
+  AB = "AB",
+  BC = "BC",
+  MB = "MB",
+  NB = "NB",
+  NL = "NL",
+  NS = "NS",
+  ON = "ON",
+  PE = "PE",
+  QC = "QC",
+  SK = "SK",
+}
 
 export type WithId<T> = T & { _id: string };
 

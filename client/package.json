@@ -9,6 +9,7 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
+    "@apollo/client": "^3.5.10",
     "@dohyunkim/common": "*",
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.2",

@@ -75,21 +75,13 @@ auth.post("/register", requireNoAuth(), async (req, res) => {
     return res.status(400).send({ error: "bad_data" });
   }
 
-  try {
-    const user = await register(input, password);
-    res.setHeader("Set-Cookie", await writeTokenCookie(user._id));
-    res.redirect(303, req.accepts("html") ? "/" : "/api/auth/whoami");
-  } catch (e) {
-    if (e instanceof MongoServerError) {
-      if (e.code === 11000) { // duplicate
-        return res.status(400)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .send({ error: "duplicate", fields: Object.keys((e as any).keyPattern)});
-      }
-    }
-    console.error(e);
-    res.status(500).send({ error: "internal" });
+  const user = await register(input, password);
+  if (!user) {
+    return res.status(400).send({ error: "duplicate", fields: ["idNumber", "email"] });
   }
+
+  res.setHeader("Set-Cookie", await writeTokenCookie(user._id));
+  res.redirect(303, req.accepts("html") ? "/" : "/api/auth/whoami");
 });
 
 /**

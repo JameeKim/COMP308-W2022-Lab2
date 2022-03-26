@@ -114,8 +114,11 @@ export const authorize = async (id: string, password: string): Promise<StudentDo
 /**
  * Insert the new user
  */
-export const register = async (user: StudentData, password: string): Promise<StudentDoc> => {
-  // TODO check already existing users with idNumber / email
+export const register = async (user: StudentData, password: string): Promise<StudentDoc | null> => {
+  const exists = await Student.count({
+    $or: [{ idNumber: user.idNumber }, { email: user.email }],
+  });
+  if (exists > 0) return null;
   user.password = await hash(password, BCRYPT_SALT_ROUNDS);
   const student = new Student(user);
   await student.save();

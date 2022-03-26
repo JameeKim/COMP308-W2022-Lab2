@@ -1,4 +1,4 @@
-import { CourseData, Province, StudentData, provinces } from "./models";
+import { CourseData, Province, StudentData } from "./models";
 
 export const isString = (input: unknown): input is string => typeof input === "string";
 
@@ -11,7 +11,7 @@ export const isStringUndefined = (input: unknown): input is string | undefined =
 };
 
 export const isProvince = (input: unknown): input is Province => {
-  return typeof input === "string" && provinces.indexOf(input as Province) > -1;
+  return typeof input === "string" && Object.keys(Province).indexOf(input as Province) > -1;
 };
 
 export const isNumber = (input: unknown): input is number => typeof input === "number";

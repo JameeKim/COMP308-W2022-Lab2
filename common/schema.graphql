@@ -1,0 +1,79 @@
+scalar Date
+
+enum Province {
+  AB
+  BC
+  MB
+  NB
+  NL
+  NS
+  ON
+  PE
+  QC
+  SK
+}
+
+interface Model {
+    _id: ID!
+}
+
+type Student implements Model {
+    _id: ID!
+    idNumber: String!
+    email: String!
+    firstName: String!
+    lastName: String!
+    address: Address!
+    phone: String
+    program: String
+    courses: [Course!]!
+}
+
+type Address {
+    street: String
+    city: String
+    province: String
+    postalCode: String
+}
+
+type Course implements Model {
+    _id: ID!
+    code: String!
+    name: String!
+    section: Int!
+    semester: String!
+    students: [Student!]!
+}
+
+type Query {
+    whoami: Student
+    courses: [Course!]!
+    course(id: ID!): Course
+    students: [Student!]!
+    student(id: ID!): Student
+}
+
+"Input data for address"
+input AddressInput {
+    street: String
+    city: String
+    province: String
+    postalCode: String
+}
+
+"Input data for registering a new student"
+input NewStudentData {
+    idNumber: String!
+    email: String!
+    firstName: String!
+    lastName: String!
+    address: AddressInput
+    phone: String
+    program: String
+}
+
+type Mutation {
+    register(data: NewStudentData!, password: String!): Student
+    login(id: String!, password: String!): Student
+    logout: String
+}

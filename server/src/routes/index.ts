@@ -36,5 +36,5 @@ routes.use(methodOverride("X-HTTP-Method-Override"), methodOverride("_method"));
 // Parse the cookie header and the JWT in the cookie
 routes.use(cookieParser(), parseUser);
 
-// All api routes
+// All REST api routes
 routes.use("/api", api);

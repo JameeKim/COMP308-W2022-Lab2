@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-import type {
+import {
+  Province,
   StudentData, StudentDataFromServer, StudentDataSmallFromServer,
 } from "@dohyunkim/common";
 
@@ -46,7 +47,7 @@ const schema = new mongoose.Schema<StudentDataServer>(
       },
       province: {
         type: String,
-        enum: ["AB", "BC", "MB", "NB", "NL", "NS", "ON", "PE", "QC", "SK"],
+        enum: Object.keys(Province),
         required: true,
       },
       postalCode: {
