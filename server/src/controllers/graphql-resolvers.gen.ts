@@ -24,7 +24,7 @@ export type Address = {
   __typename: 'Address';
   city?: Maybe<Scalars['String']>;
   postalCode?: Maybe<Scalars['String']>;
-  province?: Maybe<Scalars['String']>;
+  province?: Maybe<Province>;
   street?: Maybe<Scalars['String']>;
 };
 
@@ -32,7 +32,7 @@ export type Address = {
 export type AddressInput = {
   city?: InputMaybe<Scalars['String']>;
   postalCode?: InputMaybe<Scalars['String']>;
-  province?: InputMaybe<Scalars['String']>;
+  province?: InputMaybe<Province>;
   street?: InputMaybe<Scalars['String']>;
 };
 
@@ -46,15 +46,43 @@ export type Course = Model & {
   students: Array<Student>;
 };
 
+/** Input data for a course */
+export type CourseInput = {
+  code: Scalars['String'];
+  name: Scalars['String'];
+  section: Scalars['Int'];
+  semester: Scalars['String'];
+};
+
 export type Model = {
   _id: Scalars['ID'];
 };
 
 export type Mutation = {
   __typename: 'Mutation';
+  addCourse?: Maybe<Course>;
+  dropCourse?: Maybe<Array<Course>>;
+  enrolCourse?: Maybe<Array<Course>>;
   login?: Maybe<Student>;
-  logout?: Maybe<Scalars['String']>;
+  logout?: Maybe<Scalars['Boolean']>;
   register?: Maybe<Student>;
+  updateCourse?: Maybe<Course>;
+  updateUserInfo?: Maybe<Student>;
+};
+
+
+export type MutationAddCourseArgs = {
+  data: CourseInput;
+};
+
+
+export type MutationDropCourseArgs = {
+  courseId: Scalars['ID'];
+};
+
+
+export type MutationEnrolCourseArgs = {
+  courseId: Scalars['ID'];
 };
 
 
@@ -65,19 +93,19 @@ export type MutationLoginArgs = {
 
 
 export type MutationRegisterArgs = {
-  data: NewStudentData;
+  data: StudentInput;
   password: Scalars['String'];
 };
 
-/** Input data for registering a new student */
-export type NewStudentData = {
-  address?: InputMaybe<AddressInput>;
-  email: Scalars['String'];
-  firstName: Scalars['String'];
-  idNumber: Scalars['String'];
-  lastName: Scalars['String'];
-  phone?: InputMaybe<Scalars['String']>;
-  program?: InputMaybe<Scalars['String']>;
+
+export type MutationUpdateCourseArgs = {
+  data: CourseInput;
+  id: Scalars['ID'];
+};
+
+
+export type MutationUpdateUserInfoArgs = {
+  data: StudentInput;
 };
 
 export { Province };
@@ -112,6 +140,17 @@ export type Student = Model & {
   lastName: Scalars['String'];
   phone?: Maybe<Scalars['String']>;
   program?: Maybe<Scalars['String']>;
+};
+
+/** Input data for registering a new student */
+export type StudentInput = {
+  address?: InputMaybe<AddressInput>;
+  email: Scalars['String'];
+  firstName: Scalars['String'];
+  idNumber: Scalars['String'];
+  lastName: Scalars['String'];
+  phone?: InputMaybe<Scalars['String']>;
+  program?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -187,16 +226,17 @@ export type ResolversTypes = {
   AddressInput: AddressInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Course: ResolverTypeWrapper<CourseDoc>;
+  CourseInput: CourseInput;
   Date: ResolverTypeWrapper<Scalars['Date']>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Model: ResolversTypes['Course'] | ResolversTypes['Student'];
   Mutation: ResolverTypeWrapper<{}>;
-  NewStudentData: NewStudentData;
   Province: Province;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Student: ResolverTypeWrapper<StudentDoc>;
+  StudentInput: StudentInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -205,21 +245,22 @@ export type ResolversParentTypes = {
   AddressInput: AddressInput;
   Boolean: Scalars['Boolean'];
   Course: CourseDoc;
+  CourseInput: CourseInput;
   Date: Scalars['Date'];
   ID: Scalars['ID'];
   Int: Scalars['Int'];
   Model: ResolversParentTypes['Course'] | ResolversParentTypes['Student'];
   Mutation: {};
-  NewStudentData: NewStudentData;
   Query: {};
   String: Scalars['String'];
   Student: StudentDoc;
+  StudentInput: StudentInput;
 };
 
 export type AddressResolvers<ContextType = ExpressContext, ParentType extends ResolversParentTypes['Address'] = ResolversParentTypes['Address']> = {
   city?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   postalCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  province?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  province?: Resolver<Maybe<ResolversTypes['Province']>, ParentType, ContextType>;
   street?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -244,9 +285,14 @@ export type ModelResolvers<ContextType = ExpressContext, ParentType extends Reso
 };
 
 export type MutationResolvers<ContextType = ExpressContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  addCourse?: Resolver<Maybe<ResolversTypes['Course']>, ParentType, ContextType, RequireFields<MutationAddCourseArgs, 'data'>>;
+  dropCourse?: Resolver<Maybe<Array<ResolversTypes['Course']>>, ParentType, ContextType, RequireFields<MutationDropCourseArgs, 'courseId'>>;
+  enrolCourse?: Resolver<Maybe<Array<ResolversTypes['Course']>>, ParentType, ContextType, RequireFields<MutationEnrolCourseArgs, 'courseId'>>;
   login?: Resolver<Maybe<ResolversTypes['Student']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'id' | 'password'>>;
-  logout?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logout?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   register?: Resolver<Maybe<ResolversTypes['Student']>, ParentType, ContextType, RequireFields<MutationRegisterArgs, 'data' | 'password'>>;
+  updateCourse?: Resolver<Maybe<ResolversTypes['Course']>, ParentType, ContextType, RequireFields<MutationUpdateCourseArgs, 'data' | 'id'>>;
+  updateUserInfo?: Resolver<Maybe<ResolversTypes['Student']>, ParentType, ContextType, RequireFields<MutationUpdateUserInfoArgs, 'data'>>;
 };
 
 export type ProvinceResolvers = EnumResolverSignature<{ AB?: any, BC?: any, MB?: any, NB?: any, NL?: any, NS?: any, ON?: any, PE?: any, QC?: any, SK?: any }, ResolversTypes['Province']>;

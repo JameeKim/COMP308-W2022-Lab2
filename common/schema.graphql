@@ -32,7 +32,7 @@ type Student implements Model {
 type Address {
     street: String
     city: String
-    province: String
+    province: Province
     postalCode: String
 }
 
@@ -57,12 +57,12 @@ type Query {
 input AddressInput {
     street: String
     city: String
-    province: String
+    province: Province
     postalCode: String
 }
 
 "Input data for registering a new student"
-input NewStudentData {
+input StudentInput {
     idNumber: String!
     email: String!
     firstName: String!
@@ -72,8 +72,21 @@ input NewStudentData {
     program: String
 }
 
+"Input data for a course"
+input CourseInput {
+    code: String!
+    name: String!
+    section: Int!
+    semester: String!
+}
+
 type Mutation {
-    register(data: NewStudentData!, password: String!): Student
+    register(data: StudentInput!, password: String!): Student
     login(id: String!, password: String!): Student
-    logout: String
+    logout: Boolean
+    updateUserInfo(data: StudentInput!): Student
+    addCourse(data: CourseInput!): Course
+    updateCourse(id: ID!, data: CourseInput!): Course
+    enrolCourse(courseId: ID!): [Course!]
+    dropCourse(courseId: ID!): [Course!]
 }
