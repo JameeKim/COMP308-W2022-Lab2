@@ -1,6 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
-import { AuthProvider, RequireAuth } from "./contexts/auth";
+import { AuthProvider, RequireAuth, RequireNoAuth } from "./contexts/auth";
 import { FetchProvider } from "./contexts/fetch";
 import Layout from "./Layout";
 import Account from "./pages/auth/Account";
@@ -28,9 +28,9 @@ function App(): JSX.Element {
             <Route index element={<Index />} />
 
             <Route path="auth">
-              <Route path="sign-in" element={<SignIn />} />
-              <Route path="register" element={<Register />} />
-              <Route path="account" element={<Account />} />
+              <Route path="sign-in" element={<RequireNoAuth><SignIn /></RequireNoAuth>} />
+              <Route path="register" element={<RequireNoAuth><Register /></RequireNoAuth>} />
+              <Route path="account" element={<RequireAuth><Account /></RequireAuth>} />
             </Route>
 
             <Route path="courses">

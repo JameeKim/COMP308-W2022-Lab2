@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useMutation } from "@apollo/client";
 import { Link } from "react-router-dom";
 
 import type { StudentData } from "@dohyunkim/common";
 import UserInfoForm from "src/components/UserInfoForm";
-import { useAuth, useRequireNoAuth } from "src/contexts/auth";
+import { gql } from "src/graphql";
+
+const REGISTER = gql(/* GraphQL */`
+  mutation Register($password: String!, $data: StudentInput!) {
+    register(data: $data, password: $password) {
+      _id
+    }
+  }
+`);
 
 export default function Register(): JSX.Element {
-  const { register } = useAuth();
-  const [pending, setPending] = useState(false);
+  const [registerMutation, { loading, error }] = useMutation(REGISTER, {
+    refetchQueries: ["WhoAmI"],
+  });
 
-  useRequireNoAuth();
-
-  const onSubmit = async (data?: StudentData): Promise<void> => {
-    if (!data) return;
-    setPending(true);
-    await register(data);
-    setPending(false);
+  const onSubmit = async (input?: StudentData): Promise<void> => {
+    if (!input) return;
+    if (!input.password) return;
+    const { password, ...data } = input;
+    try {
+      await registerMutation({
+        variables: { data, password },
+      });
+    } catch { /* do nothing */ }
   };
 
   return (
@@ -32,12 +43,14 @@ export default function Register(): JSX.Element {
         method="post"
         className="list-group list-group-flush"
         id="user-register"
-        disabled={pending}
-        aria-disabled={pending}
+        disabled={loading}
         onSubmit={onSubmit}
       />
       <div className="card-body text-center">
-        <button type="submit" form="user-register" className="btn btn-primary" disabled={pending}>
+        {error && (
+          <p className="alert alert-danger" role="alert">{error.message}</p>
+        )}
+        <button type="submit" form="user-register" className="btn btn-primary" disabled={loading}>
           Register
         </button>
       </div>

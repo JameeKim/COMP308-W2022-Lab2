@@ -1,9 +1,10 @@
-import {
-  ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState,
-} from "react";
+import { useQuery } from "@apollo/client";
+import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
-import type { StudentData, StudentDataFromServer } from "@dohyunkim/common";
+import type { StudentData } from "@dohyunkim/common";
+import { gql } from "src/graphql";
+import type { WhoAmIQuery } from "src/graphql/graphql";
 
 export interface AuthCredentials {
   id: string,
@@ -20,10 +21,7 @@ export interface AuthRequestResult {
  */
 export interface AuthContextData {
   readonly whoamiInProgress: boolean;
-  readonly user: StudentDataFromServer | null;
-  readonly setUser: (newUser: StudentDataFromServer | null) => void;
-  readonly signIn: (credentials: AuthCredentials) => Promise<AuthRequestResult>;
-  readonly signOut: () => Promise<AuthRequestResult>;
+  readonly user: WhoAmIQuery["whoami"];
   readonly register: (data: StudentData) => Promise<AuthRequestResult>;
   readonly update: (data: StudentData) => Promise<AuthRequestResult>;
   readonly doWhoami: () => void;
@@ -104,6 +102,14 @@ export function RequireNoAuth({ children, to, loading }: RequireAuthProps): JSX.
   return <Navigate to={to || "/"} replace />;
 }
 
+const WHO_AM_I = gql(/* GraphQL */`
+  query WhoAmI {
+    whoami {
+      ...StudentSelf
+    }
+  }
+`);
+
 export interface AuthProviderProps {
   children?: ReactNode;
 }
@@ -113,93 +119,14 @@ export interface AuthProviderProps {
  */
 // TODO implement auto refresh of token
 export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
-  const [whoamiTrigger, setWhoamiTrigger] = useState({});
-  const [whoamiInProgress, setWhoamiInProgress] = useState(true);
-  const [user, setUser] = useState<StudentDataFromServer | null>(null);
+  // FIXME login state getting out of sync; should probably update cache in mutations
+  const { loading, data, refetch } = useQuery(WHO_AM_I, { pollInterval: 1000 * 60 });
 
   // Function to trigger whoami request
   const doWhoami = useCallback<AuthContextData["doWhoami"]>(
-    () => setWhoamiTrigger({}),
-    [],
+    () => { refetch(); },
+    [refetch],
   );
-
-  // Send whoami request when needed
-  useEffect(() => {
-    const abort = new AbortController();
-
-    const sendFetch = async (): Promise<void> => {
-      try {
-        setWhoamiInProgress(true);
-
-        const res = await fetch("/api/auth/whoami", {
-          headers: { "Accept": "application/json" },
-          method: "GET",
-          cache: "no-cache",
-          signal: abort.signal,
-        });
-
-        if (res.status === 200) {
-          const body = await res.json();
-          setUser(body.data ?? null);
-        } else {
-          console.error(`"Who Am I" request failed with response status ${res.status}`);
-        }
-      } catch (e) {
-        if (!(e instanceof DOMException) || e.name !== "AbortError") console.error(e);
-      } finally {
-        setWhoamiInProgress(false);
-      }
-    };
-
-    sendFetch();
-
-    return () => abort.abort();
-  }, [whoamiTrigger]);
-
-  /**
-   * Function to send sign in request
-   */
-  const signIn = useCallback<AuthContextData["signIn"]>(async (credentials) => {
-    const response = await fetch("/api/auth/login", {
-      headers: {
-        "Content-Type": "application/json; charset=UTF-8",
-        "Accept": "application/json",
-      },
-      method: "POST",
-      cache: "no-cache",
-      body: JSON.stringify(credentials),
-      redirect: "follow",
-    });
-    let success = false;
-    if (response.status === 200) {
-      const body = await response.json();
-      setUser(body.data ?? null);
-      success = true;
-    }
-    return { success, response };
-  }, []);
-
-  /**
-   * Function to send sign out request
-   */
-  const signOut = useCallback<AuthContextData["signOut"]>(async () => {
-    const response = await fetch("/api/auth/logout", {
-      headers: {
-        "Content-Type": "application/json; charset=UTF-8",
-        "Accept": "application/json",
-        "X-HTTP-Method-Override": "DELETE",
-      },
-      method: "POST",
-      cache: "no-cache",
-      body: JSON.stringify({}),
-    });
-    let success = false;
-    if (response.status === 200) {
-      setUser(null);
-      success = true;
-    }
-    return { success, response };
-  }, []);
 
   /**
    * Function to send new user register request
@@ -217,12 +144,11 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     });
     let success = false;
     if (response.status === 200) {
-      const body = await response.json();
-      setUser(body.data ?? null);
+      refetch();
       success = true;
     }
     return { success, response };
-  }, []);
+  }, [refetch]);
 
   /**
    * Function to send user info update request
@@ -239,29 +165,25 @@ export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
     });
     let success = false;
     if (response.status === 200) {
-      const body = await response.json();
-      setUser(body.data);
+      refetch();
       success = true;
     }
     return { success, response };
-  }, []);
+  }, [refetch]);
 
-  const data = useMemo<AuthContextData>(
+  const value = useMemo<AuthContextData>(
     () => ({
-      whoamiInProgress,
-      user,
-      setUser,
-      signIn,
-      signOut,
+      whoamiInProgress: loading,
+      user: data?.whoami,
       register,
       update,
       doWhoami,
     }),
-    [whoamiInProgress, user, signIn, signOut, register, update, doWhoami],
+    [loading, data?.whoami, register, update, doWhoami],
   );
 
   return (
-    <AuthContext.Provider value={data}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

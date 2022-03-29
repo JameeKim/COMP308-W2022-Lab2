@@ -1,18 +1,26 @@
-import { FormEvent, useState } from "react";
+import { useMutation } from "@apollo/client";
+import type { FormEvent } from "react";
 import { Link, NavLink } from "react-router-dom";
 
 import { useAuth } from "src/contexts/auth";
+import { gql } from "src/graphql";
+
+const LOG_OUT = gql(/* GraphQL */`
+  mutation LogOut {
+    logout
+  }
+`);
 
 // TODO NavBar collapse
 export default function NavBar(): JSX.Element {
-  const { user, signOut } = useAuth();
-  const [signOutPending, setSignOutPending] = useState(false);
+  const { user } = useAuth();
+  const [logoutMutation, { loading }] = useMutation(LOG_OUT, {
+    refetchQueries: ["WhoAmI"],
+  });
 
   const onSignOut = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
-    setSignOutPending(true);
-    await signOut();
-    setSignOutPending(false);
+    await logoutMutation();
   };
 
   const authSection = user
@@ -22,7 +30,7 @@ export default function NavBar(): JSX.Element {
       </Link>
       <form action="/api/auth/logout" method="POST" onSubmit={onSignOut}>
         <input type="hidden" name="_method" value="DELETE" />
-        <button type="submit" className="btn btn-danger" disabled={signOutPending}>
+        <button type="submit" className="btn btn-danger" disabled={loading}>
           Sign Out
         </button>
       </form>

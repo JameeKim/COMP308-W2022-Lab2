@@ -1,3 +1,4 @@
+import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import { StrictMode } from "react";
 import { render } from "react-dom";
 import { BrowserRouter } from "react-router-dom";
@@ -7,11 +8,18 @@ import reportWebVitals from "./reportWebVitals";
 
 import "./index.css";
 
+const graphqlClient = new ApolloClient({
+  uri: `${document.location.origin}/graphql`,
+  cache: new InMemoryCache(),
+});
+
 render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ApolloProvider client={graphqlClient}>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ApolloProvider>
   </StrictMode>,
   document.getElementById("root"),
 );

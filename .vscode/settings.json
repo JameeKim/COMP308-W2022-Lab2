@@ -5,5 +5,11 @@
   },
   "[typescriptreact]": {
     "editor.rulers": [100]
+  },
+  "[javascript]": {
+    "editor.rulers": [100]
+  },
+  "[javascriptreact]": {
+    "editor.rulers": [100]
   }
 }

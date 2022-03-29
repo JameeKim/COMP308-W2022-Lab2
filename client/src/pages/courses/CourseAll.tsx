@@ -1,20 +1,29 @@
+import { useQuery } from "@apollo/client";
 import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
-import { CourseDataFromServer, sectionToString } from "@dohyunkim/common";
+import { sectionToString } from "@dohyunkim/common";
 import SimpleButtonForm from "src/components/form/SimpleButtonForm";
 import PageLoading from "src/components/PageLoading";
 import { useAuth } from "src/contexts/auth";
-import useFetchData from "src/hooks/useFetchData";
+import { gql } from "src/graphql";
+
+const COURSE_ALL = gql(/* GraphQL */`
+  query CourseAll {
+    courses {
+      ...Course
+    }
+  }
+`);
 
 export default function CourseAll(): JSX.Element {
-  const {
-    pending,
-    error,
-    data,
-    refetch,
-  } = useFetchData<CourseDataFromServer[]>("/api/courses");
+  const { loading, error, data, refetch } = useQuery(COURSE_ALL);
   const { user, doWhoami } = useAuth();
+
+  const onRefetchClick = useCallback(
+    (): void => { refetch(); },
+    [refetch],
+  );
 
   const onChange = useCallback((res: Response): void => {
     if (res.status === 200) doWhoami();
@@ -28,16 +37,16 @@ export default function CourseAll(): JSX.Element {
         <button
           type="button"
           className="btn btn-outline-secondary"
-          disabled={pending}
-          onClick={refetch}
+          disabled={loading}
+          onClick={onRefetchClick}
         >
           Fetch Again
         </button>
         {user && <Link to="/courses/add" className="btn btn-primary ms-auto">Add a Course</Link>}
       </div>
-      {<PageLoading show={pending} />}
+      {<PageLoading show={loading} />}
       {error && <p className="alert alert-danger" role="alert">Error: <code>{error}</code></p>}
-      <p>{data?.length ?? 0} courses</p>
+      <p>{data?.courses.length ?? 0} courses</p>
       <table className="table align-middle">
         <thead>
           <tr>
@@ -54,8 +63,8 @@ export default function CourseAll(): JSX.Element {
           </tr>
         </thead>
         <tbody>
-          {data?.map((course) => {
-            const userIsIn = (user?.courses?.indexOf(course._id) ?? -1) >= 0;
+          {data?.courses.map((course) => {
+            const userIsIn = user?.courses.some(({ _id }) => _id === course._id);
             const btnStyle = userIsIn ? "danger" : "success";
             return (
               <tr key={`${course._id}`}>

@@ -1,16 +1,24 @@
-import { FormEvent, useState } from "react";
+import { useMutation } from "@apollo/client";
+import type { FormEvent } from "react";
 import { Link } from "react-router-dom";
 
 import { isString } from "@dohyunkim/common";
 import Label from "src/components/form/Label";
 import PasswordInput from "src/components/form/PasswordInput";
-import { useAuth, useRequireNoAuth } from "src/contexts/auth";
+import { gql } from "src/graphql";
+
+const LOG_IN = gql(/* GraphQL */`
+  mutation LogIn($id: String!, $password: String!) {
+    login(id: $id, password: $password) {
+      _id
+    }
+  }
+`);
 
 export default function SignIn(): JSX.Element | null {
-  const { signIn } = useAuth();
-  const [pending, setPending] = useState(false);
-
-  useRequireNoAuth();
+  const [loginMutation, { loading, error }] = useMutation(LOG_IN, {
+    refetchQueries: ["WhoAmI"],
+  });
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
@@ -21,15 +29,18 @@ export default function SignIn(): JSX.Element | null {
 
     if (!isString(id) || !isString(password)) return;
 
-    setPending(true);
-    await signIn({ id, password });
-    setPending(false);
+    try {
+      await loginMutation({ variables: { id, password } });
+    } catch { /* do nothing */ }
   };
 
   return (
     <main className="card border-info">
       <div className="card-body px-5">
         <h1 className="card-title mb-3">Sign In</h1>
+        {error && (
+          <p className="alert alert-danger" role="alert">{error.message}</p>
+        )}
         <form
           action="/api/auth/login"
           method="post"
@@ -45,8 +56,7 @@ export default function SignIn(): JSX.Element | null {
               className="form-control"
               required
               pattern="[0-9]{9}"
-              disabled={pending}
-              aria-disabled={pending}
+              disabled={loading}
             />
           </div>
           <div className="mb-3">
@@ -56,16 +66,14 @@ export default function SignIn(): JSX.Element | null {
               id="signin-pw"
               className="form-control"
               required
-              disabled={pending}
-              aria-disabled={pending}
+              disabled={loading}
             />
           </div>
           <div className="text-center">
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={pending}
-              aria-disabled={pending}
+              disabled={loading}
             >
               Sign In
             </button>

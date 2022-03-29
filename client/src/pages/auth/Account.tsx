@@ -1,25 +1,32 @@
-import { useState } from "react";
+import { useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
 import type { StudentData } from "@dohyunkim/common";
 import UserInfoForm from "src/components/UserInfoForm";
-import { useAuth, useRequireAuth } from "src/contexts/auth";
+import { useAuth } from "src/contexts/auth";
+import { gql } from "src/graphql";
+
+const UPDATE_USER = gql(/* GraphQL */`
+  mutation UpdateUser($data: StudentInput!) {
+    updateUserInfo(data: $data) {
+      _id
+    }
+  }
+`);
 
 export default function Account(): JSX.Element {
-  const { user, update } = useAuth();
-  const [pending, setPending] = useState(false);
+  const { user } = useAuth();
+  const [updateMutation, { loading, error }] = useMutation(UPDATE_USER, {
+    refetchQueries: ["WhoAmI"],
+  });
   const navigate = useNavigate();
-
-  useRequireAuth();
 
   const onSubmit = async (data?: StudentData): Promise<void> => {
     if (!data) return;
-    setPending(true);
-    const res = await update(data);
-    if (res.success) {
+    try {
+      await updateMutation({ variables: { data } });
       navigate(`/students/${user?._id ?? ""}`);
-    }
-    setPending(false);
+    } catch { /* do nothing */ }
   };
 
   return (
@@ -33,12 +40,14 @@ export default function Account(): JSX.Element {
         className="list-group list-group-flush"
         id="user-info"
         user={user}
-        disabled={pending}
-        aria-disabled={pending}
+        disabled={loading}
         onSubmit={onSubmit}
       />
       <div className="card-body text-center">
-        <button type="submit" form="user-info" className="btn btn-primary" disabled={pending}>
+        {error && (
+          <p className="alert alert-danger" role="alert">{error.message}</p>
+        )}
+        <button type="submit" form="user-info" className="btn btn-primary" disabled={loading}>
           Update
         </button>
       </div>

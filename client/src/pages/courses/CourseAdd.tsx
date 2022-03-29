@@ -1,48 +1,40 @@
-import { useState } from "react";
+import { useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
 import type { CourseData } from "@dohyunkim/common";
 import CourseForm from "src/components/CourseForm";
-import { useFetch } from "src/contexts/fetch";
+import { gql } from "src/graphql";
+
+const ADD_COURSE = gql(/* GraphQL */`
+  mutation AddCourse($data: CourseInput!) {
+    addCourse(data: $data) {
+      _id
+    }
+  }
+`);
 
 export default function CourseAdd(): JSX.Element {
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState("");
-  const { post } = useFetch();
+  const [addCourse, { loading, error }] = useMutation(ADD_COURSE);
   const navigate = useNavigate();
 
   const onSubmit = async (data?: CourseData): Promise<void> => {
     if (!data) return;
-
-    setPending(true);
-    const res = await post("/api/courses", { data });
-    const body = await res.json();
-    setError(body.error ?? "");
-    if (res.status >= 200 && res.status < 300) {
-      navigate(`/courses/${body.data._id}`);
-    }
-    setPending(false);
+    try {
+      const result = await addCourse({ variables: { data }});
+      navigate(`/courses/${result.data?.addCourse?._id}`);
+    } catch { /* do nothing */ }
   };
-
-  const errMsg = error === "duplicate"
-    ? "The course already exists!"
-    : error === "bad_data"
-      ? "Data validation failed"
-      : error
-        ? "Unknown error occurred"
-        : "";
 
   return (
     <main>
       <h1 className="mb-3">Add a Course</h1>
-      {errMsg && (<div className="alert alert-danger" role="alert">{errMsg}</div>)}
+      {error && <div className="alert alert-danger" role="alert">{error.message}</div>}
       <CourseForm
         action="/api/courses"
         method="post"
         className="px-3"
         id="course-create"
-        disabled={pending}
-        aria-disabled={pending}
+        disabled={loading}
         onSubmit={onSubmit}
       />
       <div className="text-center">

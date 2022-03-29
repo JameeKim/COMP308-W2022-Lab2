@@ -9,3 +9,4 @@ public/
 
 /common/dist/
 *.gen.ts
+/client/src/graphql/

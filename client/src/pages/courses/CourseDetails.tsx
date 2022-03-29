@@ -1,79 +1,37 @@
+import { useQuery } from "@apollo/client";
 import classNames from "classnames";
 import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
-import {
-  StudentDataSmallFromServer, courseSectionToNumber, isCourseSectionLike, sectionToString,
-} from "@dohyunkim/common";
+import { courseSectionToNumber, isCourseSectionLike, sectionToString } from "@dohyunkim/common";
 import SimpleButtonForm from "src/components/form/SimpleButtonForm";
 import PageLoading from "src/components/PageLoading";
 import { useAuth } from "src/contexts/auth";
-import useFetchData, { FetchStatus } from "src/hooks/useFetchData";
+import { gql } from "src/graphql";
 
 import { useCourseContext } from "./SingleCourse";
 
-interface StudentRowProps {
-  studentId: string;
-}
-
-function StudentRow({ studentId }: StudentRowProps): JSX.Element {
-  const { status, pending, error, data } =
-    useFetchData<StudentDataSmallFromServer>(`/api/students/${studentId}`);
-  return (
-    <tr>
-      <td className={classNames({
-        "text-danger": !!error,
-        "text-success": status === FetchStatus.Success,
-      })}>
-        <span
-          className={classNames("text-center", { invisible: pending })}
-          role="status"
-          aria-label={!pending ? status.toString() : undefined}
-          aria-hidden={pending}
-        >
-          {error ? "X" : "O"}
-        </span>
-      </td>
-      {pending ? (
-        <td colSpan={3} className="text-center">
-          <div className="spinner-border spinner-border-sm text-primary" role="status">
-            <span className="visually-hidden">Loading data...</span>
-          </div>
-        </td>
-      ) : (error || !data) ? (
-        <td colSpan={3} className="text-center text-danger">
-          Failed to get student data: <code>{error || "No data"}</code>
-        </td>
-      ) : (
-        <>
-          <td>{data.idNumber}</td>
-          <td>{data.lastName}, {data.firstName}</td>
-          <td>{data.email}</td>
-        </>
-      )}
-      <td>
-        <Link to={`/students/${studentId}`} className="btn btn-sm btn-outline-secondary w-100">
-          View
-        </Link>
-      </td>
-    </tr>
-  );
-}
+const STUDENTS_IN_COURSE = gql(/* GraphQL */`
+  query StudentsInCourse {
+    students {
+      ...StudentOther
+    }
+  }
+`);
 
 export default function CourseDetails(): JSX.Element {
-  const { pending, error, data, refetch } = useCourseContext();
+  const course = useCourseContext();
+  const students = useQuery(STUDENTS_IN_COURSE);
   const { user, doWhoami } = useAuth();
-
-  const notFound = error === "not_found";
 
   const onChange = useCallback((res: Response): void => {
     if (res.status === 200) {
-      refetch();
+      students.refetch();
       doWhoami();
     }
-  }, [doWhoami, refetch]);
+  }, [doWhoami, students]);
 
-  const userIsInCourse = user && data && (user.courses.includes(data._id));
+  const userIsInCourse = user && user.courses.some(({ _id }) => _id === course.data?._id);
 
   return (
     <main>
@@ -82,36 +40,36 @@ export default function CourseDetails(): JSX.Element {
       <section>
         <h1 className="mb-3">Course Details</h1>
         <div className="mb-3 d-flex">
-          <button type="button" className="btn btn-outline-secondary" onClick={refetch}>
-          Fetch Again
+          <button type="button" className="btn btn-outline-secondary" onClick={course.refetch}>
+            Fetch Again
           </button>
-          {user && data && (
+          {user && course.data && (
             <SimpleButtonForm
               method={userIsInCourse ? "DELETE" : "PUT"}
-              action={`/api/students/${user._id}/courses/${data._id}`}
+              action={`/api/students/${user._id}/courses/${course.data._id}`}
               formClass="d-flex ms-auto"
               btnClass={`btn btn-sm btn-outline-${userIsInCourse ? "danger" : "success"} w-100`}
               onResponse={onChange}
-              disabled={pending}
+              disabled={course.loading}
             >
               {userIsInCourse ? "Drop" : "Add"}
             </SimpleButtonForm>
           )}
-          {user && data && (
+          {user && course.data && (
             <Link
-              to={`/courses/${data._id}/edit`}
-              className={classNames("btn btn-outline-primary", { disabled: pending }, "ms-3")}
-              aria-disabled={pending}
+              to={`/courses/${course.data._id}/edit`}
+              className={
+                classNames("btn btn-outline-primary", { disabled: course.loading }, "ms-3")
+              }
+              aria-disabled={course.loading}
             >
               Edit
             </Link>
           )}
         </div>
-        <PageLoading show={pending} />
-        {error && (
-          <p className="alert alert-danger" role="alert">
-            {notFound ? "No such course" : "Error occurred while fetching data from server"}
-          </p>
+        <PageLoading show={course.loading || students.loading} />
+        {course.error && (
+          <p className="alert alert-danger" role="alert">{course.error}</p>
         )}
         <table className="table">
           <thead>
@@ -123,36 +81,35 @@ export default function CourseDetails(): JSX.Element {
           <tbody>
             <tr>
               <th scope="row">Semester</th>
-              <td>{data?.semester ?? "X0000"}</td>
+              <td>{course.data?.semester ?? "X0000"}</td>
             </tr>
             <tr>
               <th scope="col">Code</th>
-              <td>{data?.code ?? "XXXX000"}</td>
+              <td>{course.data?.code ?? "XXXX000"}</td>
             </tr>
             <tr>
               <th scope="col">Section</th>
               <td>
-                {isCourseSectionLike(data?.section)
-                  ? sectionToString(courseSectionToNumber(data?.section, true))
+                {isCourseSectionLike(course.data?.section)
+                  ? sectionToString(courseSectionToNumber(course.data?.section, true))
                   : "000"}
               </td>
             </tr>
             <tr>
               <th scope="col">Name</th>
-              <td>{data?.name ?? "-"}</td>
+              <td>{course.data?.name ?? "-"}</td>
             </tr>
           </tbody>
           <tfoot></tfoot>
         </table>
       </section>
 
-      {(user && data?.students) && (
+      {user && (
         <section className="mt-5">
           <h2 className="mb-3">Registered Students</h2>
           <table className="table table-bordered table-responsive align-middle">
             <thead>
               <tr>
-                <th scope="col"><span className="visually-hidden">Status</span></th>
                 <th scope="col">Student ID</th>
                 <th scope="col">Name</th>
                 <th scope="col">Email</th>
@@ -160,7 +117,24 @@ export default function CourseDetails(): JSX.Element {
               </tr>
             </thead>
             <tbody>
-              {data.students.map((id) => <StudentRow key={id} studentId={id} />)}
+              {students.error && (
+                <p className="alert alert-danger" role="alert">{students.error.message}</p>
+              )}
+              {students.data && students.data.students.map((student) => (
+                <tr key={student._id}>
+                  <td>{student.idNumber}</td>
+                  <td>{student.lastName}, {student.firstName}</td>
+                  <td>{student.email}</td>
+                  <td>
+                    <Link
+                      to={`/students/${student._id}`}
+                      className="btn btn-sm btn-outline-secondary w-100"
+                    >
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </section>

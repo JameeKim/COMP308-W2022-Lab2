@@ -1,16 +1,37 @@
 /**
- * @type {import("@graphql-codegen/typescript").TypeScriptPluginConfig}
+ * Configuration for GraphQL Code Generator
+ * @type {import("@graphql-codegen/plugin-helpers").Types.Config}
  */
-const config = {
-  strictScalars: true,
-  scalars: {
-    Date: "Date",
+const codegen = {
+  config: {
+    strictScalars: true,
+    scalars: {
+      Date: "Date",
+    },
+    enumValues: {
+      Province: "@dohyunkim/common#Province",
+    },
+    nonOptionalTypename: true,
+    useTypeImports: true,
   },
-  enumValues: {
-    Province: "@dohyunkim/common#Province",
+  generates: {
+    "server/src/controllers/graphql-resolvers.gen.ts": {
+      plugins: [
+        "typescript",
+        "typescript-resolvers",
+      ],
+      config: {
+        contextType: "apollo-server-express#ExpressContext",
+        mappers: {
+          Student: "../models/student#StudentDoc",
+          Course: "../models/course#CourseDoc",
+        },
+      },
+    },
+    "client/src/graphql/": {
+      preset: "gql-tag-operations-preset",
+    },
   },
-  nonOptionalTypename: true,
-  useTypeImports: true,
 };
 
 /**
@@ -18,25 +39,13 @@ const config = {
  */
 module.exports = {
   schema: ["common/schema.graphql"],
+  documents: [
+    "client/src/**/*.{ts,tsx}",
+    "!*.gen.{ts,tsx}",
+    "!*.d.ts",
+  ],
   exclude: ["*.js", "*.gen.{ts,tsx}"],
   extensions: {
-    codegen: {
-      generates: {
-        "server/src/controllers/graphql-resolvers.gen.ts": {
-          plugins: [
-            "typescript",
-            "typescript-resolvers",
-          ],
-          config: {
-            ...config,
-            contextType: "apollo-server-express#ExpressContext",
-            mappers: {
-              Student: "../models/student#StudentDoc",
-              Course: "../models/course#CourseDoc",
-            },
-          },
-        },
-      },
-    },
+    codegen,
   },
 };

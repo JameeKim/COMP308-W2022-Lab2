@@ -1,21 +1,36 @@
+import { useQuery } from "@apollo/client";
 import classNames from "classnames";
+import { useCallback } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import {
-  CourseDataFromServer,
-  StudentDataSmallFromServer,
-  sectionToString,
-} from "@dohyunkim/common";
+import { sectionToString } from "@dohyunkim/common";
 import PageLoading from "src/components/PageLoading";
 import { useAuth } from "src/contexts/auth";
-import useFetchData from "src/hooks/useFetchData";
+import { gql } from "src/graphql";
+
+const STUDENT_BY_ID = gql(/* GraphQL */`
+  query StudentById($id: ID!) {
+    student(id: $id) {
+      ...StudentOther
+      courses {
+        ...Course
+      }
+    }
+  }
+`);
 
 export default function StudentDetails(): JSX.Element {
-  const { id } = useParams();
-  const url = `/api/students/${id}`;
-  const { pending, error, data, refetch } = useFetchData<StudentDataSmallFromServer>(url);
-  const courses = useFetchData<CourseDataFromServer[]>(`${url}/courses`);
+  const { id = "" } = useParams();
+  const { loading, error, data, refetch } = useQuery(STUDENT_BY_ID, { variables: { id } });
   const { user } = useAuth();
+
+  const onRefetchClick = useCallback(
+    (): void => { refetch(); },
+    [refetch],
+  );
+
+  const student = data?.student;
+  const courses = student?.courses;
 
   return (
     <main>
@@ -24,16 +39,16 @@ export default function StudentDetails(): JSX.Element {
       <section>
         <h1 className="mb-3">Student Details</h1>
         <div className="mb-3 d-flex">
-          <button type="button" className="btn btn-outline-secondary" onClick={refetch}>
+          <button type="button" className="btn btn-outline-secondary" onClick={onRefetchClick}>
             Fetch Again
           </button>
-          {user?._id === data?._id && (
+          {user?._id === student?._id && (
             <Link to="/auth/account" className="btn btn-outline-primary ms-auto">
               Edit Info
             </Link>
           )}
         </div>
-        <PageLoading show={pending} />
+        <PageLoading show={loading} />
         {error && (
           <p className="alert alert-danger" role="alert">
             Error occurred while getting data: <code>{error}</code>
@@ -48,44 +63,31 @@ export default function StudentDetails(): JSX.Element {
           </thead>
           <tbody>
             <tr>
-              <th scope="row" className={classNames(data && "text-muted")}>Student ID</th>
-              <td>{data?.idNumber ?? "000000000"}</td>
+              <th scope="row" className={classNames(student && "text-muted")}>Student ID</th>
+              <td>{student?.idNumber ?? "000000000"}</td>
             </tr>
             <tr>
-              <th scope="row" className={classNames(data && "text-muted")}>Name</th>
-              <td>{data ? `${data.lastName}, ${data.firstName}` : "Last, First"}</td>
+              <th scope="row" className={classNames(student && "text-muted")}>Name</th>
+              <td>{student ? `${student.lastName}, ${student.firstName}` : "Last, First"}</td>
             </tr>
             <tr>
-              <th scope="row" className={classNames(data && "text-muted")}>Email</th>
-              <td>{data?.email ?? "xxxx@my.centennialcollege.ca"}</td>
+              <th scope="row" className={classNames(student && "text-muted")}>Email</th>
+              <td>{student?.email ?? "xxxx@my.centennialcollege.ca"}</td>
             </tr>
           </tbody>
         </table>
       </section>
 
-      {courses.data && (
+      {courses && (
         <section className="mt-5">
           <h2 className="mb-3">Enrolled Courses</h2>
           <div className="mb-3 d-flex">
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              disabled={courses.pending}
-              onClick={courses.refetch}
-            >
-              Fetch Again
-            </button>
-            {user?._id === data?._id && (
+            {user?._id === student?._id && (
               <Link to="/courses" className="btn btn-outline-primary ms-auto">
                 Manage Courses
               </Link>
             )}
           </div>
-          {courses.error && (
-            <p className="alert alert-danger" role="alert">
-              Error occurred while getting data: <code>{courses.error}</code>
-            </p>
-          )}
           <table className="table table-bordered table-responsive table-hover align-middle">
             <thead>
               <tr>
@@ -99,7 +101,7 @@ export default function StudentDetails(): JSX.Element {
               </tr>
             </thead>
             <tbody>
-              {courses.pending && (
+              {loading && (
                 <tr>
                   <td rowSpan={3} colSpan={4}>
                     <div className="d-flex justify-content-center align-items-center">
@@ -119,7 +121,7 @@ export default function StudentDetails(): JSX.Element {
                   </td>
                 </tr>
               )}
-              {!courses.pending && courses.data.map((course) => (
+              {!loading && courses.map((course) => (
                 <tr key={course._id}>
                   <td>{course.semester}</td>
                   <td>{course.code}</td>

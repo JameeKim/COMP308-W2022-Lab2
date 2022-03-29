@@ -1,6 +1,7 @@
 import { ComponentPropsWithoutRef, FormEventHandler, forwardRef, useCallback } from "react";
 
-import { StudentData, isStudentData, provinces } from "@dohyunkim/common";
+import { Province, StudentData, isStudentData } from "@dohyunkim/common";
+import type { WhoAmIQuery } from "src/graphql/graphql";
 
 import Label from "./form/Label";
 import PasswordInput from "./form/PasswordInput";
@@ -8,7 +9,7 @@ import PasswordInput from "./form/PasswordInput";
 type RegisterFormPropsBase = Omit<ComponentPropsWithoutRef<"form">, "onSubmit">;
 
 export interface RegisterFormProps extends RegisterFormPropsBase {
-  user?: StudentData | null | undefined;
+  user?: WhoAmIQuery["whoami"];
   disabled?: boolean | undefined;
   onSubmit?: (data?: StudentData) => void;
 }
@@ -124,7 +125,7 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
               name="phone"
               id="user-phone"
               className="form-control"
-              defaultValue={user?.phone}
+              defaultValue={user?.phone ?? undefined}
             />
           </div>
           <div className="mb-3">
@@ -134,7 +135,7 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
               name="program"
               id="user-program"
               className="form-control"
-              defaultValue={user?.program}
+              defaultValue={user?.program ?? undefined}
             />
           </div>
         </div>
@@ -149,7 +150,7 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
               name="street"
               id="user-street"
               className="form-control"
-              defaultValue={user?.address.street}
+              defaultValue={user?.address.street ?? undefined}
             />
           </div>
           <div className="mb-3">
@@ -159,7 +160,7 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
               name="city"
               id="user-city"
               className="form-control"
-              defaultValue={user?.address.city}
+              defaultValue={user?.address.city ?? undefined}
             />
           </div>
           <div className="mb-3 row">
@@ -171,7 +172,9 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
                 className="form-select"
                 defaultValue={user?.address.province || "ON"}
               >
-                {provinces.map((prov) => <option value={prov} key={prov}>{prov}</option>)}
+                {Object.values(Province).map((prov) => (
+                  <option value={prov} key={prov}>{prov}</option>
+                ))}
               </select>
             </div>
             <div className="col-12 col-sm-6 mb-3 mb-sm-0">
@@ -181,7 +184,7 @@ const UserInfoForm = forwardRef<HTMLFormElement, RegisterFormProps>((
                 name="postalCode"
                 id="user-postal"
                 className="form-control"
-                defaultValue={user?.address.postalCode}
+                defaultValue={user?.address.postalCode ?? undefined}
                 pattern="[A-Z][0-9][A-Z]( )?[0-9][A-Z][0-9]"
               />
             </div>
