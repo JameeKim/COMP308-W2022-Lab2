@@ -17,6 +17,7 @@ const documents = {
     "\n  query CourseAll {\n    courses {\n      ...Course\n    }\n  }\n": graphql.CourseAllDocument,
     "\n  query StudentsInCourse {\n    students {\n      ...StudentOther\n    }\n  }\n": graphql.StudentsInCourseDocument,
     "\n  mutation UpdateCourse($id: ID!, $data: CourseInput!) {\n    updateCourse(id: $id, data: $data) {\n      _id\n    }\n  }\n": graphql.UpdateCourseDocument,
+    "\n  query MyCourses {\n    whoami {\n      _id\n      courses {\n        ...Course\n      }\n    }\n  }\n": graphql.MyCoursesDocument,
     "\n  query CourseById($id: ID!) {\n    course(id: $id) {\n      ...Course\n    }\n  }\n": graphql.CourseByIdDocument,
     "\n  query StudentById($id: ID!) {\n    student(id: $id) {\n      ...StudentOther\n      courses {\n        ...Course\n      }\n    }\n  }\n": graphql.StudentByIdDocument,
     "\n  query StudentsAll {\n    students {\n      ...StudentOther\n    }\n  }\n": graphql.StudentsAllDocument,
@@ -36,6 +37,7 @@ export function gql(source: "\n  mutation AddCourse($data: CourseInput!) {\n    
 export function gql(source: "\n  query CourseAll {\n    courses {\n      ...Course\n    }\n  }\n"): (typeof documents)["\n  query CourseAll {\n    courses {\n      ...Course\n    }\n  }\n"];
 export function gql(source: "\n  query StudentsInCourse {\n    students {\n      ...StudentOther\n    }\n  }\n"): (typeof documents)["\n  query StudentsInCourse {\n    students {\n      ...StudentOther\n    }\n  }\n"];
 export function gql(source: "\n  mutation UpdateCourse($id: ID!, $data: CourseInput!) {\n    updateCourse(id: $id, data: $data) {\n      _id\n    }\n  }\n"): (typeof documents)["\n  mutation UpdateCourse($id: ID!, $data: CourseInput!) {\n    updateCourse(id: $id, data: $data) {\n      _id\n    }\n  }\n"];
+export function gql(source: "\n  query MyCourses {\n    whoami {\n      _id\n      courses {\n        ...Course\n      }\n    }\n  }\n"): (typeof documents)["\n  query MyCourses {\n    whoami {\n      _id\n      courses {\n        ...Course\n      }\n    }\n  }\n"];
 export function gql(source: "\n  query CourseById($id: ID!) {\n    course(id: $id) {\n      ...Course\n    }\n  }\n"): (typeof documents)["\n  query CourseById($id: ID!) {\n    course(id: $id) {\n      ...Course\n    }\n  }\n"];
 export function gql(source: "\n  query StudentById($id: ID!) {\n    student(id: $id) {\n      ...StudentOther\n      courses {\n        ...Course\n      }\n    }\n  }\n"): (typeof documents)["\n  query StudentById($id: ID!) {\n    student(id: $id) {\n      ...StudentOther\n      courses {\n        ...Course\n      }\n    }\n  }\n"];
 export function gql(source: "\n  query StudentsAll {\n    students {\n      ...StudentOther\n    }\n  }\n"): (typeof documents)["\n  query StudentsAll {\n    students {\n      ...StudentOther\n    }\n  }\n"];

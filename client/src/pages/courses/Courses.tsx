@@ -1,29 +1,32 @@
+import { useQuery } from "@apollo/client";
 import { useCallback } from "react";
 import { Link } from "react-router-dom";
 
-import { CourseDataFromServer, sectionToString } from "@dohyunkim/common";
+import { sectionToString } from "@dohyunkim/common";
 import SimpleButtonForm from "src/components/form/SimpleButtonForm";
 import PageLoading from "src/components/PageLoading";
-import { useAuth } from "src/contexts/auth";
-import useFetchData, { FetchStatus } from "src/hooks/useFetchData";
+import { gql } from "src/graphql";
+
+const MY_COURSES = gql(/* GraphQL */`
+  query MyCourses {
+    whoami {
+      _id
+      courses {
+        ...Course
+      }
+    }
+  }
+`);
 
 export default function Courses(): JSX.Element {
-  const { user, doWhoami } = useAuth();
-  const url = `/api/students/${user?._id}/courses`;
-  const {
-    status,
-    pending,
-    error,
-    data,
-    refetch,
-  } = useFetchData<CourseDataFromServer[]>(url, !user);
+  const { loading, error, data, refetch } = useQuery(MY_COURSES);
+  const user = data?.whoami;
 
   const onChange = useCallback((res: Response): void => {
     if (res.status === 200) {
       refetch();
-      doWhoami();
     }
-  }, [doWhoami, refetch]);
+  }, [refetch]);
 
   return (
     <main>
@@ -32,22 +35,22 @@ export default function Courses(): JSX.Element {
         <button
           type="button"
           className="btn btn-outline-secondary"
-          disabled={pending || !user}
-          onClick={refetch}
+          disabled={loading || !user}
+          onClick={(): void => { refetch(); }}
         >
           Fetch Again
         </button>
         <Link to="/courses/all" className="ms-auto me-2">See All Courses &gt;</Link>
       </div>
-      {!user && (
+      {(!loading && !user) && (
         <p className="alert alert-primary">
           You need to <Link to="/auth/sign-in">sign in</Link> to register to courses and view the
           list.
         </p>
       )}
-      <PageLoading show={pending} />
-      {status === FetchStatus.Error && <p>Error: <code>{error}</code></p>}
-      {status !== FetchStatus.Pending && <p>{user ? data?.length : 0} courses</p>}
+      <PageLoading show={loading} />
+      {error && <p className="alert alert-danger" role="alert">{error.message}</p>}
+      {!loading && <p>{user?.courses.length ?? 0} courses</p>}
       <table className="table align-middle">
         <thead>
           <tr>
@@ -64,34 +67,30 @@ export default function Courses(): JSX.Element {
           </tr>
         </thead>
         <tbody>
-          {user && data?.map((course) => (
-            <tr key={`${course._id}`}>
+          {user && user.courses.map((course) => (
+            <tr key={course._id}>
               <td>{course.semester}</td>
               <td>{course.code}</td>
               <td><Link to={`./${course._id}`}>{course.name}</Link></td>
               <td>{sectionToString(course.section)}</td>
-              {user && (
-                <>
-                  <td>
-                    <SimpleButtonForm
-                      method="DELETE"
-                      action={`/api/students/${user._id}/courses/${course._id}`}
-                      btnClass="btn btn-sm btn-outline-danger w-100"
-                      onResponse={onChange}
-                    >
-                      Drop
-                    </SimpleButtonForm>
-                  </td>
-                  <td>
-                    <Link
-                      to={`./${course._id}/edit`}
-                      className="btn btn-sm btn-outline-primary w-100"
-                    >
-                      Edit
-                    </Link>
-                  </td>
-                </>
-              )}
+              <td>
+                <SimpleButtonForm
+                  method="DELETE"
+                  action={`/api/students/${user._id}/courses/${course._id}`}
+                  btnClass="btn btn-sm btn-outline-danger w-100"
+                  onResponse={onChange}
+                >
+                  Drop
+                </SimpleButtonForm>
+              </td>
+              <td>
+                <Link
+                  to={`./${course._id}/edit`}
+                  className="btn btn-sm btn-outline-primary w-100"
+                >
+                  Edit
+                </Link>
+              </td>
             </tr>
           ))}
         </tbody>

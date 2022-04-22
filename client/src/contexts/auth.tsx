@@ -120,7 +120,7 @@ export interface AuthProviderProps {
 // TODO implement auto refresh of token
 export function AuthProvider({ children }: AuthProviderProps): JSX.Element {
   // FIXME login state getting out of sync; should probably update cache in mutations
-  const { loading, data, refetch } = useQuery(WHO_AM_I, { pollInterval: 1000 * 60 });
+  const { loading, data, refetch } = useQuery(WHO_AM_I);
 
   // Function to trigger whoami request
   const doWhoami = useCallback<AuthContextData["doWhoami"]>(
